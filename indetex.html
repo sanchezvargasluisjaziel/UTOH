@@ -1,0 +1,2951 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UTOH - Sistema de Control de Importaciones (Protocolo de Montreal)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Librería QRious para generación de Códigos QR Oficiales -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .tab-active {
+            background-color: #eef2ff;
+            color: #4338ca;
+            border-right: 4px solid #4338ca;
+            font-weight: 700;
+        }
+        .tab-inactive {
+            color: #475569;
+        }
+        .tab-inactive:hover {
+            background-color: #f1f5f9;
+            color: #1e293b;
+        }
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #printable-receipt-area, #printable-receipt-area * {
+                visibility: visible;
+            }
+            #printable-receipt-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                box-shadow: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="h-screen flex overflow-hidden text-slate-800">
+
+    <!-- BARRA LATERAL (SIDEBAR) -->
+    <aside class="w-64 bg-white border-r border-gray-200 hidden md:flex flex-col justify-between shrink-0 z-20">
+        <div>
+            <!-- Logo / Encabezado -->
+            <div class="h-16 flex items-center px-6 border-b border-gray-100 bg-slate-900 text-white">
+                <div class="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center font-extrabold mr-3 shadow-sm shrink-0">
+                    U
+                </div>
+                <div class="leading-tight overflow-hidden">
+                    <div class="font-bold text-sm tracking-tight truncate">Control UTOH</div>
+                    <div class="text-[10px] text-indigo-300 truncate">Protocolo de Montreal</div>
+                </div>
+            </div>
+
+            <!-- Menú de Navegación -->
+            <nav class="mt-3 space-y-0.5 overflow-y-auto max-h-[calc(100vh-150px)]">
+                <div class="px-6 py-1.5 text-[11px] font-bold uppercase tracking-wider text-gray-400">Control Principal</div>
+
+                <button onclick="switchTab('quotas')" id="tab-quotas" class="tab-active flex items-center px-6 py-3 text-left w-full transition-colors duration-150 font-medium text-sm">
+                    <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    Asignación de Cuota
+                </button>
+
+                <button onclick="switchTab('mod1')" id="tab-mod1" class="tab-inactive flex items-center px-6 py-3 text-left w-full transition-colors duration-150 font-medium text-sm">
+                    <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>
+                    Módulo 1: Regulados
+                </button>
+
+                <button onclick="switchTab('mod2')" id="tab-mod2" class="tab-inactive flex items-center px-6 py-3 text-left w-full transition-colors duration-150 font-medium text-sm">
+                    <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                    Módulo 2: No Regulados
+                </button>
+
+                <button onclick="switchTab('mod3')" id="tab-mod3" class="tab-inactive flex items-center px-6 py-3 text-left w-full transition-colors duration-150 font-medium text-sm">
+                    <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                    Módulo 3: Equipos/Aparatos
+                </button>
+
+                <div class="my-1 border-t border-gray-100"></div>
+                <div class="px-6 py-1 text-[11px] font-bold uppercase tracking-wider text-indigo-500">Portal de Importadores</div>
+
+                <button onclick="switchTab('portal')" id="tab-portal" class="tab-inactive flex items-center px-6 py-3 text-left w-full transition-colors duration-150 font-medium text-sm">
+                    <svg class="w-5 h-5 mr-3 shrink-0 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                    Vista de Empresa
+                </button>
+
+                <div class="my-1 border-t border-gray-100"></div>
+                <div class="px-6 py-1 text-[11px] font-bold uppercase tracking-wider text-gray-400">Catálogos y Configuración</div>
+
+                <button onclick="switchTab('companies')" id="tab-companies" class="tab-inactive flex items-center px-6 py-3 text-left w-full transition-colors duration-150 font-medium text-sm">
+                    <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    Catálogo de Empresas
+                </button>
+
+                <button onclick="switchTab('substances')" id="tab-substances" class="tab-inactive flex items-center px-6 py-3 text-left w-full transition-colors duration-150 font-medium text-sm">
+                    <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                    Catálogo de Sustancias
+                </button>
+
+                <button onclick="switchTab('years')" id="tab-years" class="tab-inactive flex items-center px-6 py-3 text-left w-full transition-colors duration-150 font-medium text-sm">
+                    <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    Años Fiscales
+                </button>
+
+                <button onclick="switchTab('audit')" id="tab-audit" class="tab-inactive flex items-center px-6 py-3 text-left w-full transition-colors duration-150 font-medium text-sm">
+                    <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    Registro de Auditoría
+                </button>
+            </nav>
+        </div>
+
+        <!-- Pie de Barra Lateral -->
+        <div class="p-4 border-t border-gray-100 bg-gray-50 space-y-2">
+            <button onclick="clearAllDemoDataToBlank()" class="w-full py-2 px-3 bg-white hover:bg-red-50 text-red-600 border border-red-200 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center">
+                <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                Dejar Módulos en Blanco
+            </button>
+            <div class="flex items-center justify-between text-[11px] text-gray-500 px-1">
+                <span>Año Fiscal: 2 Ene - 31 Dic</span>
+                <span class="inline-flex items-center text-emerald-600 font-semibold"><span class="w-2 h-2 rounded-full bg-emerald-500 mr-1"></span>En Línea</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="flex-1 flex flex-col h-screen overflow-hidden">
+
+        <!-- BARRA SUPERIOR (HEADER) -->
+        <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 md:px-6 shrink-0 z-10 gap-2 overflow-x-auto">
+            <!-- Selector Móvil -->
+            <div class="md:hidden flex items-center shrink-0">
+                <select onchange="switchTab(this.value)" id="mobile-nav-select" class="text-xs font-semibold border border-gray-300 rounded-lg p-2 bg-gray-50 text-indigo-700">
+                    <option value="quotas">Asignación de Cuota</option>
+                    <option value="mod1">Módulo 1: Regulados</option>
+                    <option value="mod2">Módulo 2: No Regulados</option>
+                    <option value="mod3">Módulo 3: Equipos</option>
+                    <option value="portal">Vista de Empresa</option>
+                    <option value="companies">Catálogo de Empresas</option>
+                    <option value="substances">Catálogo de Sustancias</option>
+                    <option value="years">Años Fiscales</option>
+                    <option value="audit">Auditoría</option>
+                </select>
+            </div>
+
+            <!-- Selector de Año Fiscal Activo -->
+            <div class="flex items-center space-x-2 shrink-0">
+                <div class="flex items-center bg-indigo-50 border border-indigo-200 rounded-lg px-3 py-1.5">
+                    <span class="text-xs font-bold text-indigo-900 mr-2">Año Fiscal:</span>
+                    <select id="global-fiscal-year" onchange="renderAll()" class="bg-transparent text-xs sm:text-sm font-extrabold text-indigo-700 outline-none cursor-pointer"></select>
+                </div>
+                <button onclick="switchTab('years')" title="Agregar o editar Años Fiscales" class="px-2.5 py-1.5 bg-white hover:bg-indigo-50 text-indigo-600 border border-indigo-200 rounded-lg text-xs font-bold transition-colors">
+                    + Año
+                </button>
+            </div>
+
+            <!-- Botones de Acción Derecha -->
+            <div class="flex items-center space-x-2 md:space-x-3 ml-auto shrink-0">
+                <!-- Validador de Folio / QR -->
+                <button onclick="openVerifyFolioModal()" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold flex items-center shadow-sm transition-colors">
+                    <svg class="w-4 h-4 mr-1.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+                    Verificar Folio / QR
+                </button>
+
+                <!-- Botón Importar BD -->
+                <button onclick="openImportDBModal()" class="px-3 py-1.5 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 rounded-lg text-xs font-semibold flex items-center transition-colors">
+                    <svg class="w-4 h-4 mr-1 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                    Importar BD
+                </button>
+
+                <!-- Botón Contextual Registrar Importación -->
+                <button id="top-register-btn" onclick="openContextImportModal()" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow-sm transition-colors flex items-center">
+                    + Registrar Importación
+                </button>
+
+                <!-- Selector de Rol Administrador / Monitoreo Personal de Empresa -->
+                <div class="relative flex items-center bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200">
+                    <svg class="w-4 h-4 text-indigo-600 mr-1.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                    <select id="user-role-selector" onchange="onRoleSelectorChange()" class="text-xs font-semibold text-gray-700 bg-transparent outline-none cursor-pointer max-w-[180px] truncate">
+                        <optgroup label="Accesos de Administrador">
+                            <option value="Admin 1 (Sistema)">Admin 1 (Sistema)</option>
+                            <option value="Admin 2 (Aduana)">Admin 2 (Aduana)</option>
+                            <option value="Admin 3 (Auditor)">Admin 3 (Auditor)</option>
+                        </optgroup>
+                        <optgroup label="Monitoreo Personal (Empresas)" id="user-role-companies"></optgroup>
+                    </select>
+                </div>
+            </div>
+        </header>
+
+        <!-- CONTENIDO PRINCIPAL DINÁMICO -->
+        <main class="flex-1 overflow-y-auto p-4 md:p-8" id="main-content"></main>
+    </div>
+
+    <!-- ======================================================================= -->
+    <!-- MODALES DEL SISTEMA                                                     -->
+    <!-- ======================================================================= -->
+
+    <!-- 1. MODAL ESPECÍFICO DE REGISTRO DE IMPORTACIÓN POR MÓDULO -->
+    <div id="import-modal" class="fixed inset-0 bg-gray-900 bg-opacity-60 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[92vh] flex flex-col overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-indigo-900 text-white" id="modal-header-bar">
+                <div>
+                    <span class="text-[10px] uppercase tracking-wider font-bold text-indigo-200 block" id="modal-module-subtitle">Registro Oficial UTOH</span>
+                    <h3 class="text-lg font-bold" id="modal-module-title">Registrar Importación</h3>
+                </div>
+                <button onclick="closeModal()" class="text-indigo-200 hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <form onsubmit="handleImportSubmit(event)" class="p-6 overflow-y-auto space-y-4 text-left">
+                <input type="hidden" id="modal_current_module" value="1">
+
+                <!-- Fechas de Orden vs Llegada (Regla Año Fiscal 2 Ene - 31 Dic) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-indigo-50/70 p-3.5 rounded-xl border border-indigo-100">
+                    <div>
+                        <label class="block text-xs font-bold text-indigo-950 mb-1">Fecha de Orden (Define AF) <span class="text-red-500">*</span></label>
+                        <input type="date" id="modal_order_date" required onchange="onOrderDateOrCompanyChange()" class="w-full p-2 border border-indigo-300 rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Fecha Estimada Llegada</label>
+                        <input type="date" id="modal_arrival_date" class="w-full p-2 border border-gray-300 rounded-lg text-sm bg-white outline-none">
+                    </div>
+                    <div class="sm:col-span-2 text-[11px] text-indigo-800 font-medium flex items-center justify-between pt-1 border-t border-indigo-100">
+                        <span>Regla Fiscal (2 Ene - 31 Dic): Se contabiliza al ordenarse.</span>
+                        <span id="modal_computed_fy_badge" class="font-extrabold bg-indigo-600 text-white px-2 py-0.5 rounded">AF 2026</span>
+                    </div>
+                </div>
+
+                <!-- Selector de Empresa filtrado por el Módulo activo -->
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="block text-xs font-bold text-gray-700" id="modal_company_label">Empresa Importadora <span class="text-red-500">*</span></label>
+                        <button type="button" onclick="openQuickCompanyModal(document.getElementById('modal_current_module').value)" class="text-xs text-indigo-600 hover:underline font-bold">+ Nueva Empresa</button>
+                    </div>
+                    <select id="modal_company" required onchange="onOrderDateOrCompanyChange()" class="w-full p-2.5 border border-gray-300 rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-indigo-500"></select>
+                </div>
+
+                <!-- Campos Exclusivos MÓDULO 1 (Solo gases con cuota asignada) -->
+                <div id="fields-mod1" class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Sustancia Regulada con Cuota Autorizada <span class="text-red-500">*</span></label>
+                        <select id="modal_type_select_mod1" onchange="autoFillTariffAndDetails('1')" class="w-full p-2.5 border border-gray-300 rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-indigo-500"></select>
+                        <p id="mod1_quota_available_text" class="text-xs font-semibold text-emerald-700 mt-1"></p>
+                    </div>
+                </div>
+
+                <!-- Campos Exclusivos MÓDULO 2 (Solo gases no regulados) -->
+                <div id="fields-mod2" class="hidden space-y-3">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Gas Refrigerante No Regulado <span class="text-red-500">*</span></label>
+                        <select id="modal_type_select_mod2" onchange="autoFillTariffAndDetails('2')" class="w-full p-2.5 border border-gray-300 rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-emerald-500"></select>
+                    </div>
+                </div>
+
+                <!-- Campos Exclusivos MÓDULO 3 (Solo Equipos / Unidades) -->
+                <div id="fields-mod3" class="hidden space-y-3">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Categoría Arancelaria del Equipo / Aparato <span class="text-red-500">*</span></label>
+                        <select id="modal_type_select_mod3" onchange="autoFillTariffAndDetails('3')" class="w-full p-2.5 border border-gray-300 rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-purple-500"></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Descripción del Artículo / Modelo Específico <span class="text-red-500">*</span></label>
+                        <input type="text" id="modal_product_desc" class="w-full p-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-purple-500" placeholder="Ej. Minisplit Inverter 18,000 BTU Marca LG">
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Gas que Contiene el Equipo</label>
+                            <input type="text" id="modal_contained_gas" class="w-full p-2 border border-gray-300 rounded-lg text-sm outline-none" placeholder="Ej. R-410A o R-600a">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Clasificación del Gas</label>
+                            <select id="modal_reg_status" class="w-full p-2 border border-gray-300 rounded-lg text-sm bg-white outline-none">
+                                <option value="Regulado (Protocolo Montreal)">Con Gas Regulado (Montreal)</option>
+                                <option value="No Regulado">Con Gas No Regulado</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fracción Arancelaria Automática y Cantidad -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Fracción Arancelaria (Automática)</label>
+                        <input type="text" id="modal_tariff" readonly class="w-full p-2.5 border border-gray-200 rounded-lg text-sm font-mono bg-gray-100 text-gray-700 cursor-not-allowed" placeholder="Se autocompleta...">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1" id="modal_qty_label">Cantidad (Toneladas) <span class="text-red-500">*</span></label>
+                        <input type="number" step="0.01" min="0.01" id="modal_qty" required class="w-full p-2.5 border border-gray-300 rounded-lg text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500" placeholder="0.00">
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-3 pt-4 border-t border-gray-100">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-bold shadow-sm">
+                        Registrar y Emitir Comprobante QR
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. MODAL RÁPIDO PARA AGREGAR EMPRESA DESDE CUALQUIER MÓDULO -->
+    <div id="quick-company-modal" class="fixed inset-0 bg-gray-900 bg-opacity-60 hidden z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[88vh] flex flex-col overflow-hidden text-left">
+            <div class="px-5 py-3.5 border-b border-gray-100 flex justify-between items-center bg-gray-50 shrink-0">
+                <h3 class="text-base font-bold text-gray-900">Agregar Empresa Importadora</h3>
+                <button onclick="closeQuickCompanyModal()" class="text-gray-400 hover:text-red-500">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <form onsubmit="handleQuickCompanySubmit(event)" class="p-5 overflow-y-auto flex-1 space-y-3.5">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">Nombre o Razón Social de la Empresa <span class="text-red-500">*</span></label>
+                    <input type="text" id="qc_name" required class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm" placeholder="Ej. Importadora de Climas S.A.">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1.5">Módulos en los que opera <span class="text-red-500">*</span></label>
+                    <div class="grid grid-cols-3 gap-2 bg-gray-50 p-2.5 rounded-lg border border-gray-200 text-xs">
+                        <label class="flex items-center space-x-1.5 cursor-pointer">
+                            <input type="checkbox" id="qc_mod1" value="1" onchange="renderDynamicSubstancePicker('qc')" class="rounded text-indigo-600 h-4 w-4">
+                            <span class="font-semibold text-gray-800">Módulo 1</span>
+                        </label>
+                        <label class="flex items-center space-x-1.5 cursor-pointer">
+                            <input type="checkbox" id="qc_mod2" value="2" onchange="renderDynamicSubstancePicker('qc')" class="rounded text-emerald-600 h-4 w-4">
+                            <span class="font-semibold text-gray-800">Módulo 2</span>
+                        </label>
+                        <label class="flex items-center space-x-1.5 cursor-pointer">
+                            <input type="checkbox" id="qc_mod3" value="3" onchange="renderDynamicSubstancePicker('qc')" class="rounded text-purple-600 h-4 w-4">
+                            <span class="font-semibold text-gray-800">Módulo 3</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Despliegue compacto de sustancias según los módulos seleccionados -->
+                <div class="border border-gray-200 bg-gray-50/60 rounded-lg p-3 space-y-2">
+                    <div class="flex items-center justify-between gap-2">
+                        <label class="text-xs font-bold text-gray-700">Sustancias / Equipos del Módulo</label>
+                        <div class="flex items-center gap-2">
+                            <span id="qc_sub_count_badge" class="text-[11px] font-bold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full">0 seleccionadas</span>
+                            <button type="button" onclick="toggleAllVisibleSubstances('qc', true)" class="text-[11px] text-indigo-600 hover:underline font-semibold">Todas</button>
+                            <button type="button" onclick="toggleAllVisibleSubstances('qc', false)" class="text-[11px] text-gray-500 hover:underline">Limpiar</button>
+                        </div>
+                    </div>
+                    <input type="text" id="qc_sub_search" oninput="filterDynamicSubstancePicker('qc')" class="w-full p-1.5 border border-gray-300 rounded text-xs bg-white outline-none" placeholder="Filtrar sustancia o arancel...">
+                    <div id="qc_substances_container" class="max-h-36 overflow-y-auto space-y-1.5 pr-1"></div>
+                </div>
+
+                <div class="flex justify-end space-x-2 pt-2 border-t border-gray-100">
+                    <button type="button" onclick="closeQuickCompanyModal()" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-xs font-semibold text-gray-700 hover:bg-gray-50">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 shadow-sm">Guardar Empresa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 3. MODAL DE EDICIÓN COMPACTO (EMPRESAS, SUSTANCIAS, CUOTAS, AÑOS, IMPORTACIONES) -->
+    <div id="edit-modal" class="fixed inset-0 bg-gray-900 bg-opacity-60 hidden z-[65] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[88vh] flex flex-col overflow-hidden text-left">
+            <div class="px-5 py-3.5 border-b border-gray-100 flex justify-between items-center bg-gray-50 shrink-0">
+                <h3 class="text-base font-bold text-gray-900" id="edit-modal-title">Editar</h3>
+                <button type="button" onclick="closeEditModal()" class="text-gray-400 hover:text-red-500">✕</button>
+            </div>
+
+            <div class="p-5 overflow-y-auto flex-1 space-y-3.5">
+                <input type="hidden" id="edit-modal-id">
+                <input type="hidden" id="edit-modal-type">
+
+                <div id="edit-modal-name-container">
+                    <label class="block text-xs font-bold text-gray-700 mb-1" id="edit-modal-name-label">Nombre</label>
+                    <input type="text" id="edit-modal-input" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm">
+                </div>
+
+                <!-- Campos compactos para editar Empresa -->
+                <div id="edit-modal-company-extra" class="hidden space-y-3">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Módulos Autorizados</label>
+                        <div class="grid grid-cols-3 gap-2 bg-gray-50 p-2.5 rounded-lg border border-gray-200 text-xs">
+                            <label class="flex items-center space-x-1.5 cursor-pointer">
+                                <input type="checkbox" id="edit-comp-mod1" value="1" onchange="renderDynamicSubstancePicker('edit')" class="rounded text-indigo-600 h-4 w-4">
+                                <span class="font-semibold">Módulo 1</span>
+                            </label>
+                            <label class="flex items-center space-x-1.5 cursor-pointer">
+                                <input type="checkbox" id="edit-comp-mod2" value="2" onchange="renderDynamicSubstancePicker('edit')" class="rounded text-emerald-600 h-4 w-4">
+                                <span class="font-semibold">Módulo 2</span>
+                            </label>
+                            <label class="flex items-center space-x-1.5 cursor-pointer">
+                                <input type="checkbox" id="edit-comp-mod3" value="3" onchange="renderDynamicSubstancePicker('edit')" class="rounded text-purple-600 h-4 w-4">
+                                <span class="font-semibold">Módulo 3</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="border border-gray-200 bg-gray-50/60 rounded-lg p-3 space-y-2">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="text-xs font-bold text-gray-800">Sustancias / Equipos del Módulo</span>
+                            <div class="flex items-center gap-2">
+                                <span id="edit_sub_count_badge" class="text-[11px] font-bold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full">0 seleccionadas</span>
+                                <button type="button" onclick="toggleAllVisibleSubstances('edit', true)" class="text-[11px] text-indigo-600 hover:underline font-semibold">Todas</button>
+                                <button type="button" onclick="toggleAllVisibleSubstances('edit', false)" class="text-[11px] text-gray-500 hover:underline">Limpiar</button>
+                            </div>
+                        </div>
+                        <input type="text" id="edit_sub_search" oninput="filterDynamicSubstancePicker('edit')" class="w-full p-1.5 border border-gray-300 rounded text-xs bg-white outline-none" placeholder="Filtrar sustancias...">
+                        <div id="edit_substances_container" class="max-h-36 overflow-y-auto space-y-1.5 pr-1"></div>
+                    </div>
+                </div>
+
+                <!-- Campos para editar Sustancia / Equipo -->
+                <div id="edit-modal-module-container" class="hidden space-y-3">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Clasificación / Módulo</label>
+                        <select id="edit-modal-module" onchange="toggleEditRefrigerantField()" class="w-full p-2 border border-gray-300 rounded-lg text-sm bg-white outline-none">
+                            <option value="1">Módulo 1: Gas Regulado (Protocolo de Montreal)</option>
+                            <option value="2">Módulo 2: Gas Refrigerante No Regulado</option>
+                            <option value="3">Módulo 3: Equipo / Aparato con Refrigerante</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Fracción Arancelaria Oficial</label>
+                        <input type="text" id="edit-modal-tariff" class="w-full p-2 border border-gray-300 rounded-lg text-sm font-mono outline-none" placeholder="Ej. 3827.63.00.00">
+                    </div>
+                </div>
+
+                <div id="edit-modal-refrigerant-container" class="hidden">
+                    <label class="block text-xs font-bold text-gray-700 mb-1">Refrigerante que usa el Equipo (Módulo 3)</label>
+                    <input type="text" id="edit-modal-refrigerant" class="w-full p-2 border border-gray-300 rounded-lg text-sm outline-none" placeholder="Ej. R-410A / R-600a">
+                </div>
+
+                <!-- Campos para editar Cuota o Cantidad de Importación -->
+                <div id="edit-modal-limit-container" class="hidden">
+                    <label class="block text-xs font-bold text-gray-700 mb-1" id="edit-modal-limit-label">Cantidad / Límite (Toneladas)</label>
+                    <input type="number" step="0.01" id="edit-modal-limit" class="w-full p-2 border border-gray-300 rounded-lg text-sm outline-none">
+                </div>
+
+                <div id="edit-modal-date-container" class="hidden">
+                    <label class="block text-xs font-bold text-gray-700 mb-1">Fecha de Orden de Importación</label>
+                    <input type="date" id="edit-modal-date" class="w-full p-2 border border-gray-300 rounded-lg text-sm outline-none">
+                </div>
+            </div>
+
+            <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 flex justify-end space-x-2 shrink-0">
+                <button type="button" onclick="closeEditModal()" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-xs font-semibold text-gray-700 hover:bg-gray-50">Cancelar</button>
+                <button type="button" onclick="saveEdit()" class="px-5 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. MODAL DE COMPROBANTE DIGITAL BANCARIO CON QR Y ENTREGA DUAL (EMPRESA + ADMIN) -->
+    <div id="receipt-modal" class="fixed inset-0 bg-gray-900 bg-opacity-70 hidden z-[70] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full max-h-[94vh] flex flex-col overflow-hidden text-left border border-gray-200">
+            <!-- Encabezado del Comprobante -->
+            <div class="bg-slate-900 text-white px-6 py-4 flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 rounded-full bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-400 font-bold">
+                        ✓
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold leading-tight">Comprobante Oficial de Registro de Importación</h3>
+                        <p class="text-[11px] text-slate-300" id="rec_timestamp">Emitido por Sistema SARAH / UTOH</p>
+                    </div>
+                </div>
+                <button onclick="closeReceiptModal()" class="text-slate-400 hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <!-- Cuerpo del Comprobante -->
+            <div class="p-6 overflow-y-auto flex-1 space-y-4 bg-white" id="printable-receipt-area">
+                <!-- Banner de Entrega Dual (Administrador + Empresa Importadora) -->
+                <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3.5 flex flex-col gap-2">
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="flex items-center gap-2">
+                            <span class="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-white text-xs font-bold shrink-0">✓</span>
+                            <div>
+                                <div class="text-xs font-bold text-emerald-950">Entrega Dual Confirmada (Administración + Empresa Importadora)</div>
+                                <div class="text-[11px] text-emerald-800" id="rec_dual_delivery_text">
+                                    Comprobante entregado simultáneamente a la Administración Aduanera y al Buzón de la Empresa.
+                                </div>
+                            </div>
+                        </div>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-200/80 text-emerald-900 whitespace-nowrap" id="rec_copy_badge">
+                            DOBLE EJEMPLAR OFICIAL
+                        </span>
+                    </div>
+                    <!-- Selector de Ejemplar (Administrador vs Empresa vs Ambos) -->
+                    <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-emerald-200/70 text-xs">
+                        <span class="text-[11px] font-semibold text-emerald-900">Visualizando ejemplar:</span>
+                        <div class="inline-flex rounded-lg bg-white p-0.5 border border-emerald-300 shadow-sm">
+                            <button type="button" id="btn_copy_both" onclick="switchReceiptCopyMode('both')" class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-600 text-white transition-colors">
+                                Ambos Acuses
+                            </button>
+                            <button type="button" id="btn_copy_admin" onclick="switchReceiptCopyMode('admin')" class="px-2.5 py-1 rounded-md text-[11px] font-semibold text-gray-700 hover:bg-gray-100 transition-colors">
+                                Ejemplar Administrador
+                            </button>
+                            <button type="button" id="btn_copy_company" onclick="switchReceiptCopyMode('company')" class="px-2.5 py-1 rounded-md text-[11px] font-semibold text-gray-700 hover:bg-gray-100 transition-colors">
+                                Ejemplar Empresa
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Caja de Folio de Seguimiento -->
+                <div class="bg-slate-900 text-white p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-inner">
+                    <div>
+                        <span class="text-[10px] uppercase tracking-widest text-indigo-300 font-bold block">Número de Seguimiento / Folio Oficial</span>
+                        <span class="text-lg sm:text-xl font-mono font-extrabold tracking-wider text-emerald-400" id="rec_tracking_number">UTOH-2026-M1-000000</span>
+                    </div>
+                    <button type="button" onclick="copyTrackingFolio()" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg text-xs font-semibold border border-white/20 self-start sm:self-auto">
+                        <span id="copy_folio_btn_text">Copiar Folio</span>
+                    </button>
+                </div>
+
+                <!-- QR + Detalles de la Operación -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center bg-gray-50 p-4 rounded-xl border border-gray-200">
+                    <div class="flex flex-col items-center justify-center bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
+                        <canvas id="receipt-qr-canvas" width="140" height="140"></canvas>
+                        <span class="text-[10px] font-bold text-gray-500 mt-1.5 uppercase tracking-wider">QR de Verificación</span>
+                    </div>
+                    <div class="sm:col-span-2 space-y-2 text-xs">
+                        <div class="flex justify-between border-b border-gray-200 pb-1.5">
+                            <span class="text-gray-500">Empresa Importadora:</span>
+                            <span class="font-bold text-gray-900 text-right" id="rec_company">---</span>
+                        </div>
+                        <div class="flex justify-between border-b border-gray-200 pb-1.5">
+                            <span class="text-gray-500">Módulo de Control:</span>
+                            <span class="font-semibold text-indigo-700 text-right" id="rec_module">---</span>
+                        </div>
+                        <div class="flex justify-between border-b border-gray-200 pb-1.5">
+                            <span class="text-gray-500">Sustancia / Producto:</span>
+                            <span class="font-bold text-gray-900 text-right" id="rec_substance">---</span>
+                        </div>
+                        <div class="flex justify-between border-b border-gray-200 pb-1.5">
+                            <span class="text-gray-500">Fracción Arancelaria:</span>
+                            <span class="font-mono font-bold text-gray-800" id="rec_tariff">---</span>
+                        </div>
+                        <div class="flex justify-between border-b border-gray-200 pb-1.5">
+                            <span class="text-gray-500">Cantidad Registrada:</span>
+                            <span class="font-extrabold text-emerald-700 text-sm" id="rec_qty">---</span>
+                        </div>
+                        <div class="flex justify-between border-b border-gray-200 pb-1.5">
+                            <span class="text-gray-500">Fecha de Orden (Fiscal):</span>
+                            <span class="font-semibold text-gray-800" id="rec_order_date">---</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Fecha Estimada Llegada:</span>
+                            <span class="text-gray-600" id="rec_arrival_date">---</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Desglose de Resta de Cuota (Exclusivo Módulo 1) -->
+                <div id="rec_quota_breakdown" class="hidden bg-indigo-50 border border-indigo-200 rounded-xl p-3.5">
+                    <div class="text-xs font-bold text-indigo-950 mb-2">Impacto en Cuota Anual Autorizada (Módulo 1)</div>
+                    <div class="grid grid-cols-3 gap-2 text-center text-xs">
+                        <div class="bg-white p-2 rounded-lg border border-indigo-100">
+                            <div class="text-[10px] text-gray-500">Cuota Asignada</div>
+                            <div class="font-bold text-gray-800" id="rec_quota_limit">0.00 Ton</div>
+                        </div>
+                        <div class="bg-white p-2 rounded-lg border border-indigo-100">
+                            <div class="text-[10px] text-gray-500">Total Utilizado</div>
+                            <div class="font-bold text-indigo-700" id="rec_quota_used">0.00 Ton</div>
+                        </div>
+                        <div class="bg-white p-2 rounded-lg border border-indigo-100">
+                            <div class="text-[10px] text-gray-500">Saldo Restante</div>
+                            <div class="font-extrabold text-emerald-700" id="rec_quota_remaining">0.00 Ton</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sello Digital y Firma de Auditoría con Doble Acuse -->
+                <div class="border-t border-dashed border-gray-300 pt-3 text-[11px] text-gray-500 space-y-2">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div id="rec_seal_admin_box" class="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                            <div class="text-[10px] font-bold uppercase tracking-wider text-indigo-700">1. Acuse Ejemplar Administrador (UTOH)</div>
+                            <div class="font-semibold text-gray-800 mt-0.5" id="rec_user">Admin 1 (Sistema)</div>
+                            <div class="text-[10px] text-emerald-700 font-medium mt-0.5" id="rec_admin_status">● Entregado en Bóveda de Auditoría</div>
+                        </div>
+                        <div id="rec_seal_company_box" class="p-2.5 rounded-lg bg-indigo-50/60 border border-indigo-200">
+                            <div class="text-[10px] font-bold uppercase tracking-wider text-indigo-800">2. Acuse Ejemplar Empresa Importadora</div>
+                            <div class="font-semibold text-gray-800 mt-0.5" id="rec_company_recipient">Empresa Importadora</div>
+                            <div class="text-[10px] text-emerald-700 font-medium mt-0.5" id="rec_company_status">● Entregado en Portal de Empresa</div>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="block text-[10px] uppercase tracking-wider text-gray-400 font-semibold">Clave de Rastreo / Sello Digital de Autenticidad:</span>
+                        <code class="block bg-gray-100 text-gray-600 px-2.5 py-1.5 rounded font-mono text-[10px] mt-1 break-all border border-gray-200" id="rec_auth_hash">---</code>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pie del Comprobante -->
+            <div class="px-6 py-3.5 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+                <button type="button" onclick="window.print()" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-xs font-bold text-gray-700 hover:bg-gray-100 flex items-center">
+                    Imprimir / Guardar PDF
+                </button>
+                <button type="button" onclick="closeReceiptModal()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold">
+                    Cerrar Comprobante
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. MODAL VERIFICADOR DE FOLIO / QR OFICIAL -->
+    <div id="verify-folio-modal" class="fixed inset-0 bg-gray-900 bg-opacity-60 hidden z-[70] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 text-left">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-900">Verificador Oficial de Folio / QR</h3>
+                <button onclick="closeVerifyFolioModal()" class="text-gray-400 hover:text-red-500">✕</button>
+            </div>
+            <p class="text-xs text-gray-500 mb-3">Ingrese el número de seguimiento (Ej. <code class="font-mono bg-gray-100 px-1">UTOH-2026-M1-849201</code>) para validar su autenticidad y entrega dual.</p>
+            <div class="flex space-x-2 mb-4">
+                <input type="text" id="verify_folio_input" class="flex-1 p-2.5 border border-gray-300 rounded-lg text-sm font-mono uppercase outline-none focus:ring-2 focus:ring-indigo-500" placeholder="UTOH-2026-M1-XXXXXX">
+                <button onclick="verifyTrackingFolio()" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold">Verificar</button>
+            </div>
+            <div id="verify_folio_result"></div>
+        </div>
+    </div>
+
+    <!-- 6. MODAL PARA IMPORTAR BASE DE DATOS REAL (CSV / JSON) -->
+    <div id="import-db-modal" class="fixed inset-0 bg-gray-900 bg-opacity-60 hidden z-[70] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 text-left space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="text-lg font-bold text-gray-900">Cargar / Sincronizar Base de Datos Real</h3>
+                <button onclick="closeImportDBModal()" class="text-gray-400 hover:text-red-500">✕</button>
+            </div>
+            <p class="text-xs text-gray-600">Suba un archivo JSON o CSV con sus empresas, cuotas o registros de importación reales, o restaure el listado oficial UTOH.</p>
+            <input type="file" id="db_file_input" accept=".json,.csv" class="w-full text-xs border border-gray-300 rounded-lg p-2 bg-gray-50">
+            <div class="flex flex-wrap justify-between items-center gap-2 pt-3 border-t">
+                <button type="button" onclick="restoreUTOHCatalog()" class="px-3 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg text-xs font-bold hover:bg-emerald-100">
+                    Restaurar Aranceles UTOH (Sin CFC)
+                </button>
+                <div class="space-x-2">
+                    <button type="button" onclick="closeImportDBModal()" class="px-4 py-2 bg-gray-100 rounded-lg text-xs font-semibold text-gray-700">Cerrar</button>
+                    <button type="button" onclick="processRealDatabaseUpload()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700">Procesar Archivo</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 7. MODAL DE ALERTA / CONFIRMACIÓN PERSONALIZADO (SIN USAR alert() NI confirm()) -->
+    <div id="custom-dialog-modal" class="fixed inset-0 bg-gray-900 bg-opacity-60 hidden z-[80] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 text-left">
+            <h3 class="text-base font-bold text-gray-900 mb-2" id="custom-dialog-title">Aviso</h3>
+            <p class="text-sm text-gray-600 mb-5" id="custom-dialog-message"></p>
+            <div class="flex justify-end space-x-2" id="custom-dialog-buttons"></div>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR TOAST NOTIFICACIONES -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-[90] space-y-2"></div>
+
+    <!-- ======================================================================= -->
+    <!-- LÓGICA CENTRAL, CATÁLOGO OFICIAL UTOH (SIN CFCs) Y RENDERIZADO REACTIVO -->
+    <!-- ======================================================================= -->
+    <script>
+        // 1. LISTADO OFICIAL DE SUSTANCIAS Y EQUIPOS SUGERIDOS UTOH (EXCLUYENDO CFCs R-11, R-12, R-502)
+        window.OFFICIAL_UTOH_SUBSTANCES = [
+            // MÓDULO 1: GASES REGULADOS POR EL PROTOCOLO DE MONTREAL / ENMIENDA DE KIGALI (HCFC / HFC / Mezclas)
+            { id: "s4", name: "R-22", tariff: "2903.71.00.00", module: "1" },
+            { id: "s5", name: "R-141a", tariff: "2903.73.00.00", module: "1" },
+            { id: "s6", name: "R-141b", tariff: "2903.73.00.00", module: "1" },
+            { id: "s7", name: "R-401 (MP-39)", tariff: "3827.31.00.00", module: "1" },
+            { id: "s8", name: "R-409A", tariff: "3827.32.00.00", module: "1" },
+            { id: "s9", name: "R-413 (MO49)", tariff: "3827.64.00.00", module: "1" },
+            { id: "s10", name: "R-414A", tariff: "3827.32.00.00", module: "1" },
+            { id: "s11", name: "R-414B", tariff: "3827.32.00.00", module: "1" },
+            { id: "s12", name: "R-123", tariff: "2903.72.00.00", module: "1" },
+            { id: "s13", name: "R-410A", tariff: "3827.63.00.00", module: "1" },
+            { id: "s14", name: "HFC R-422D", tariff: "3827.62.00.00", module: "1" },
+            { id: "s15", name: "R-134a", tariff: "2903.45.00.00", module: "1" },
+            { id: "s16", name: "R-404A", tariff: "3827.61.00.00", module: "1" },
+            { id: "s17", name: "R-407A", tariff: "3827.63.00.00", module: "1" },
+            { id: "s18", name: "R-407C", tariff: "3827.64.00.00", module: "1" },
+            { id: "s19", name: "R-152a", tariff: "2903.43.00.00", module: "1" },
+            { id: "s20", name: "R-125", tariff: "2903.44.00.00", module: "1" },
+            { id: "s21", name: "R-507A", tariff: "3827.61.00.00", module: "1" },
+            { id: "s22", name: "R-227ea", tariff: "2903.46.00.00", module: "1" },
+            { id: "s23", name: "R-417A", tariff: "3827.63.00.00", module: "1" },
+            { id: "s25", name: "R-417C", tariff: "3827.64.00.00", module: "1" },
+            { id: "s27", name: "R-507", tariff: "3827.61.00.00", module: "1" },
+            { id: "s28", name: "R-507C", tariff: "3827.61.00.00", module: "1" },
+            { id: "s29", name: "R-507F", tariff: "3827.61.00.00", module: "1" },
+            { id: "s30", name: "OPTEON XP 30 (R-514A)", tariff: "3827.90.00.00", module: "1" },
+            { id: "s31", name: "HFC-223R", tariff: "3827.63.00.00", module: "1" },
+            { id: "s32", name: "Bromuro de Metilo", tariff: "2903.61.00.00", module: "1" },
+            { id: "s37", name: "Poliol Premezclado con R-141b", tariff: "3827.31.00.00", module: "1" },
+            { id: "s38", name: "R-134a Poliuretano Espuma", tariff: "3909.50.00.00", module: "1" },
+            { id: "s39", name: "Poliol Premezclado con R-134a", tariff: "3827.31.00.00", module: "1" },
+            { id: "s40", name: "Poliol Premezclado con HFC 365 mfc", tariff: "3827.62.00.00", module: "1" },
+            { id: "s43", name: "Poliol Premezclado a base de HFC (932r-x)", tariff: "3827.62.00.00", module: "1" },
+            { id: "s47", name: "TETRAFLUORETANO R-14", tariff: "2903.49.00.00", module: "1" },
+            { id: "s48", name: "PENTAFLUORETANO SOLKANE R-365/R-227/93/7", tariff: "3827.68.00.00", module: "1" },
+            { id: "s49", name: "FREON MO89", tariff: "3827.62.00.00", module: "1" },
+            { id: "s58", name: "R-142b", tariff: "2903.74.00.00", module: "1" },
+            { id: "s59", name: "R-23", tariff: "2903.41.00.00", module: "1" },
+            { id: "s60", name: "R-32", tariff: "2903.42.00.00", module: "1" },
+            { id: "s61", name: "R-134", tariff: "2903.45.00.00", module: "1" },
+            { id: "s62", name: "R-236cb", tariff: "2903.46.00.00", module: "1" },
+            { id: "s63", name: "R-236ea", tariff: "2903.46.00.00", module: "1" },
+            { id: "s64", name: "R-245ca", tariff: "2903.47.00.00", module: "1" },
+            { id: "s65", name: "R43-10mee", tariff: "2903.48.00.00", module: "1" },
+            { id: "s66", name: "R-365mfc", tariff: "2903.48.00.00", module: "1" },
+            { id: "s69", name: "R-407B", tariff: "3827.62.00.00", module: "1" },
+
+            // MÓDULO 2: GASES REFRIGERANTES NO REGULADOS POR MONTREAL / NATURALES / HFO / SOLVENTES
+            { id: "s24", name: "RX-11 FLUSH", tariff: "3814.00.10.00", module: "2" },
+            { id: "s26", name: "Mezcla limpiador interno de serpentina base R-134a", tariff: "3814.00.10.00", module: "2" },
+            { id: "s33", name: "R-600a (Isobutano)", tariff: "2901.10.00.00", module: "2" },
+            { id: "s34", name: "R-290 (Propano licuado)", tariff: "2711.12.00.00", module: "2" },
+            { id: "s35", name: "R-290 (Propano Gaseoso)", tariff: "2711.29.00.00", module: "2" },
+            { id: "s36", name: "R-728 (Nitrógeno)", tariff: "2804.30.00.00", module: "2" },
+            { id: "s41", name: "Poliol Premezclado a base de Urespray C60270-26", tariff: "3907.21.00.00", module: "2" },
+            { id: "s42", name: "URESPRAY PMX32", tariff: "3907.21.00.00", module: "2" },
+            { id: "s44", name: "R-1234yf", tariff: "2903.51.00.00", module: "2" },
+            { id: "s45", name: "HFO R-1233zd", tariff: "2903.79.90.00", module: "2" },
+            { id: "s46", name: "SOLSTICE EZ FLUSH", tariff: "2903.79.90.00", module: "2" },
+            { id: "s50", name: "CARB MEDIC CARBURATOR CLEANER (R-30)", tariff: "3814.00.10.00", module: "2" },
+            { id: "s51", name: "GUNK BRAKE PARTS CLEANER (R-30)", tariff: "3814.00.10.00", module: "2" },
+            { id: "s52", name: "ST-20-FLUSH", tariff: "3827.90.00.00", module: "2" },
+            { id: "s53", name: "358-20 SPRAY", tariff: "3402.50.00.00", module: "2" },
+            { id: "s54", name: "EF-134", tariff: "2711.19.00.00", module: "2" },
+            { id: "s55", name: "ECO FREEZ MEZCLA HC", tariff: "2711.19.00.00", module: "2" },
+            { id: "s56", name: "MDI POLIMERICO", tariff: "3909.31.00.00", module: "2" },
+            { id: "s57", name: "TOUCH N FOAM MAX.", tariff: "3909.50.00.00", module: "2" },
+            { id: "s67", name: "HFO-1234ze", tariff: "2903.51.00.00", module: "2" },
+            { id: "s68", name: "HFO-1336mzz", tariff: "2903.51.00.00", module: "2" },
+            { id: "s70", name: "HALOTRON BrX (BTP) (Diferente a extintor)", tariff: "2903.79.90.00", module: "2" },
+            { id: "s72", name: "R-744 (Dióxido de Carbono)", tariff: "2811.21.00.00", module: "2" },
+            { id: "s73", name: "R-717 (Amoniaco)", tariff: "2814.10.00.00", module: "2" },
+
+            // MÓDULO 3: EQUIPOS Y APARATOS QUE CONTIENEN GASES REFRIGERANTES (SOLO UNIDADES)
+            { id: "e1", name: "Equipos de aire acondicionado ventana/pared (un solo cuerpo)", tariff: "8415.10.00.00", module: "3", refrigerant: "R-410A / R-32" },
+            { id: "e2", name: "Equipos de aire acondicionado tipo Split System", tariff: "8415.10.00.00", module: "3", refrigerant: "R-410A / R-32" },
+            { id: "e3", name: "Equipos de aire acondicionado de techo (Roof-top) frío-calor", tariff: "8415.81.00.00", module: "3", refrigerant: "R-410A" },
+            { id: "e4", name: "Equipos de aire acondicionado para vehículos", tariff: "8415.20.00.00", module: "3", refrigerant: "R-134a / R-1234yf" },
+            { id: "e5", name: "Equipos de aire acondicionado de techo (Roof-top) solo frío", tariff: "8415.82.00.00", module: "3", refrigerant: "R-410A" },
+            { id: "e6", name: "Combinación de refrigerador y congelador con puertas independientes", tariff: "8418.10.00.00", module: "3", refrigerant: "R-600a / R-134a" },
+            { id: "e7", name: "Solo refrigerador doméstico de compresión", tariff: "8418.21.00.00", module: "3", refrigerant: "R-600a / R-134a" },
+            { id: "e8", name: "Solo refrigerador doméstico de absorción", tariff: "8418.29.10.00", module: "3", refrigerant: "R-717" },
+            { id: "e9", name: "Congeladores horizontales tipo arcón (cofre) <= 800 L", tariff: "8418.30.00.00", module: "3", refrigerant: "R-290 / R-600a" },
+            { id: "e10", name: "Congeladores verticales tipo armario <= 900 L", tariff: "8418.40.00.00", module: "3", refrigerant: "R-290 / R-134a" },
+            { id: "e11", name: "Muebles refrigerados para la exposición de productos", tariff: "8418.50.00.00", module: "3", refrigerant: "R-290 / R-404A" },
+            { id: "e12", name: "Máquinas para enfriar agua (Chillers)", tariff: "8418.69.10.00", module: "3", refrigerant: "R-410A / R-134a" },
+            { id: "e13", name: "Equipos de producción de frío para contenedores", tariff: "8418.69.90.00", module: "3", refrigerant: "R-404A / R-134a" },
+            { id: "e14", name: "Equipos Frigoríficos comerciales/industriales", tariff: "8418.69.90.00", module: "3", refrigerant: "R-404A / R-507A" },
+            { id: "e15", name: "Compresores para equipos de refrigeración", tariff: "8414.30.00.00", module: "3", refrigerant: "R-134a / R-410A" },
+            { id: "e16", name: "Unidad Evaporadora de equipo de aire acondicionado", tariff: "8415.90.00.00", module: "3", refrigerant: "R-410A / R-32" },
+            { id: "e17", name: "Unidad Condensadora de equipo de aire acondicionado", tariff: "8415.90.00.00", module: "3", refrigerant: "R-410A / R-32" },
+            { id: "e18", name: "HALOTRON BrX (BTP) (Presentado con el extintor)", tariff: "8424.10.00.00", module: "3", refrigerant: "Halotron BrX" }
+        ];
+
+        window.DEMO_COMPANIES = [
+            {
+                id: "c1",
+                name: "FrioMax S.A.",
+                modules: ["1", "2"],
+                allowedSubstances: ["R-22", "R-410A", "R-134a", "R-600a (Isobutano)"]
+            },
+            {
+                id: "c2",
+                name: "EcoGas Honduras",
+                modules: ["2"],
+                allowedSubstances: ["R-600a (Isobutano)", "R-290 (Propano licuado)", "R-1234yf"]
+            },
+            {
+                id: "c3",
+                name: "ClimaCorp Equipos S.A.",
+                modules: ["3"],
+                allowedSubstances: [
+                    "Equipos de aire acondicionado tipo Split System",
+                    "Muebles refrigerados para la exposición de productos"
+                ]
+            }
+        ];
+
+        window.DEMO_QUOTAS = [
+            { id: "q1", company: "FrioMax S.A.", substance: "R-22", limit: 500, year: 2026 },
+            { id: "q2", company: "FrioMax S.A.", substance: "R-410A", limit: 800, year: 2026 },
+            { id: "q3", company: "FrioMax S.A.", substance: "R-134a", limit: 450, year: 2026 }
+        ];
+
+        window.DEMO_IMPORTS = [
+            { id: "imp1", module: "1", company: "FrioMax S.A.", type: "R-22", tariff: "2903.71.00.00", qty: 120, orderDate: "2026-11-15", arrivalDate: "2026-12-04", fiscalYear: 2026, trackingNumber: "UTOH-2026-M1-849201", authCode: "9F8A-44B1-C092-UTOH-7731", registeredBy: "Admin 1 (Sistema)", registeredAt: "2026-11-15T10:30:00", deliveredToAdmin: true, deliveredToCompany: true },
+            { id: "imp2", module: "1", company: "FrioMax S.A.", type: "R-410A", tariff: "3827.63.00.00", qty: 300, orderDate: "2026-12-28", arrivalDate: "2027-01-11", fiscalYear: 2026, trackingNumber: "UTOH-2026-M1-592044", authCode: "3D7E-91A0-B842-UTOH-1109", registeredBy: "Admin 2 (Aduana)", registeredAt: "2026-12-28T14:15:00", deliveredToAdmin: true, deliveredToCompany: true },
+            { id: "imp3", module: "2", company: "EcoGas Honduras", type: "R-600a (Isobutano)", tariff: "2901.10.00.00", qty: 45, orderDate: "2026-05-10", arrivalDate: "2026-05-28", fiscalYear: 2026, trackingNumber: "UTOH-2026-M2-310982", authCode: "7C1B-28F4-E650-UTOH-4920", registeredBy: "Admin 1 (Sistema)", registeredAt: "2026-05-10T09:05:00", deliveredToAdmin: true, deliveredToCompany: true },
+            { id: "imp4", module: "3", company: "ClimaCorp Equipos S.A.", type: "Equipos de aire acondicionado tipo Split System", productDescription: "Minisplit Inverter 18,000 BTU", contained: "R-410A", regStatus: "Regulado (Protocolo Montreal)", tariff: "8415.10.00.00", qty: 150, orderDate: "2026-06-20", arrivalDate: "2026-07-05", fiscalYear: 2026, trackingNumber: "UTOH-2026-M3-774190", authCode: "6A9D-53C2-F118-UTOH-8834", registeredBy: "Admin 3 (Auditor)", registeredAt: "2026-06-20T16:40:00", deliveredToAdmin: true, deliveredToCompany: true }
+        ];
+
+        // Estado Central Reactivo
+        window.appState = {
+            activeTab: 'quotas',
+            selectedPortalCompany: 'FrioMax S.A.',
+            companies: [...window.DEMO_COMPANIES],
+            substances: [...window.OFFICIAL_UTOH_SUBSTANCES],
+            fiscalYears: [
+                { id: "fy1", year: 2025 },
+                { id: "fy2", year: 2026 },
+                { id: "fy3", year: 2027 }
+            ],
+            quotas: [...window.DEMO_QUOTAS],
+            imports: [...window.DEMO_IMPORTS],
+            auditLogs: [
+                { id: "a1", timestamp: "2026-12-28 14:15", user: "Admin 2 (Aduana)", module: "Módulo 1", action: "Registró orden [UTOH-2026-M1-592044] (2026-12-28, llega 2027-01-11 -> Contabilizada en AF 2026): 300 Ton de R-410A para FrioMax S.A." }
+            ]
+        };
+
+        window.tempSelectedSubstances = {
+            cat: new Set(),
+            qc: new Set(),
+            edit: new Set()
+        };
+
+        const tabs = ['quotas', 'mod1', 'mod2', 'mod3', 'portal', 'companies', 'substances', 'years', 'audit'];
+
+        // Regla Fiscal: Del 2 de Enero al 31 de Diciembre según FECHA DE ORDEN
+        window.calculateFiscalYear = function(orderDateString) {
+            if (!orderDateString) return 2026;
+            const parts = orderDateString.split('-');
+            if (parts.length < 3) return 2026;
+            const year = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10);
+            const day = parseInt(parts[2], 10);
+            if (month === 1 && day === 1) return year - 1;
+            return year;
+        };
+
+        window.generateTrackingFolio = function(fy, mod) {
+            const randomDigits = Math.floor(100000 + Math.random() * 900000);
+            return `UTOH-${fy}-M${mod}-${randomDigits}`;
+        };
+
+        window.generateAuthHash = function() {
+            const s4 = () => Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1).toUpperCase();
+            return `${s4()}-${s4()}-${s4()}-UTOH-${s4()}`;
+        };
+
+        window.customAlert = function(title, message) {
+            document.getElementById('custom-dialog-title').innerText = title;
+            document.getElementById('custom-dialog-message').innerText = message;
+            document.getElementById('custom-dialog-buttons').innerHTML = `
+                <button onclick="document.getElementById('custom-dialog-modal').classList.add('hidden')" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700">Entendido</button>
+            `;
+            document.getElementById('custom-dialog-modal').classList.remove('hidden');
+        };
+
+        window.customConfirm = function(title, message, onConfirmCallback) {
+            document.getElementById('custom-dialog-title').innerText = title;
+            document.getElementById('custom-dialog-message').innerText = message;
+            const btns = document.getElementById('custom-dialog-buttons');
+            btns.innerHTML = '';
+
+            const cancelBtn = document.createElement('button');
+            cancelBtn.className = "px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200";
+            cancelBtn.innerText = "Cancelar";
+            cancelBtn.onclick = () => document.getElementById('custom-dialog-modal').classList.add('hidden');
+
+            const okBtn = document.createElement('button');
+            okBtn.className = "px-4 py-2 bg-red-600 text-white rounded-lg text-xs font-bold hover:bg-red-700";
+            okBtn.innerText = "Confirmar";
+            okBtn.onclick = () => {
+                document.getElementById('custom-dialog-modal').classList.add('hidden');
+                if (onConfirmCallback) onConfirmCallback();
+            };
+
+            btns.appendChild(cancelBtn);
+            btns.appendChild(okBtn);
+            document.getElementById('custom-dialog-modal').classList.remove('hidden');
+        };
+
+        window.showToast = function(msg) {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = "bg-slate-900 text-white px-4 py-3 rounded-xl shadow-lg text-xs font-semibold flex items-center space-x-2 border border-slate-700";
+            toast.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span><span>${msg}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3200);
+        };
+
+        window.logAudit = function(actionText, moduleName = 'Sistema') {
+            const roleSel = document.getElementById('user-role-selector');
+            const rawUser = roleSel ? roleSel.value : 'Admin 1 (Sistema)';
+            const user = rawUser.startsWith('COMPANY_VIEW:') ? `Empresa (${rawUser.replace('COMPANY_VIEW:', '')})` : rawUser;
+            const now = new Date();
+            const ts = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+            window.appState.auditLogs.unshift({
+                id: 'aud_' + Date.now() + Math.random(),
+                timestamp: ts,
+                user,
+                module: moduleName,
+                action: actionText
+            });
+        };
+
+        window.renderAll = function() {
+            updateGlobalDropdowns();
+            renderActiveTab();
+            updateTopRegisterButton();
+        };
+
+        function getActiveFiscalYear() {
+            const sel = document.getElementById('global-fiscal-year');
+            if (sel && sel.value) return Number(sel.value);
+            return 2026;
+        }
+
+        function getMonitoredCompanyFilter() {
+            const sel = document.getElementById('user-role-selector');
+            if (sel && sel.value && sel.value.startsWith('COMPANY_VIEW:')) {
+                return sel.value.replace('COMPANY_VIEW:', '');
+            }
+            return null;
+        }
+
+        function updateGlobalDropdowns() {
+            const fySelect = document.getElementById('global-fiscal-year');
+            if (fySelect) {
+                const currentVal = fySelect.value ? Number(fySelect.value) : 2026;
+                fySelect.innerHTML = '';
+                const sortedYears = [...window.appState.fiscalYears].sort((a,b) => a.year - b.year);
+                sortedYears.forEach(y => {
+                    const opt = new Option(`AF ${y.year}`, y.year);
+                    if (Number(y.year) === currentVal) opt.selected = true;
+                    fySelect.add(opt);
+                });
+                if (!sortedYears.some(y => Number(y.year) === currentVal) && sortedYears.length > 0) {
+                    fySelect.value = sortedYears[sortedYears.length - 1].year;
+                }
+            }
+
+            const compRoleGroup = document.getElementById('user-role-companies');
+            const roleSel = document.getElementById('user-role-selector');
+            if (compRoleGroup && roleSel) {
+                const prevRole = roleSel.value;
+                compRoleGroup.innerHTML = '';
+                window.appState.companies.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = `COMPANY_VIEW:${c.name}`;
+                    opt.textContent = `🏢 Empresa: ${c.name}`;
+                    compRoleGroup.appendChild(opt);
+                });
+                if (Array.from(roleSel.options).some(o => o.value === prevRole)) {
+                    roleSel.value = prevRole;
+                }
+            }
+        }
+
+        function updateTopRegisterButton() {
+            const btn = document.getElementById('top-register-btn');
+            if (!btn) return;
+            const tab = window.appState.activeTab;
+            if (tab === 'mod1') {
+                btn.innerText = '+ Registrar en Módulo 1';
+                btn.className = 'px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow-sm transition-colors flex items-center';
+            } else if (tab === 'mod2') {
+                btn.innerText = '+ Registrar en Módulo 2';
+                btn.className = 'px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition-colors flex items-center';
+            } else if (tab === 'mod3') {
+                btn.innerText = '+ Registrar en Módulo 3';
+                btn.className = 'px-3.5 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-bold shadow-sm transition-colors flex items-center';
+            } else {
+                btn.innerText = '+ Registrar Importación';
+                btn.className = 'px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow-sm transition-colors flex items-center';
+            }
+        }
+
+        function onRoleSelectorChange() {
+            const sel = document.getElementById('user-role-selector');
+            if (sel && sel.value.startsWith('COMPANY_VIEW:')) {
+                const compName = sel.value.replace('COMPANY_VIEW:', '');
+                window.appState.selectedPortalCompany = compName;
+                switchTab('portal');
+                return;
+            }
+            window.renderAll();
+        }
+
+        function switchTab(tabId) {
+            window.appState.activeTab = tabId;
+            tabs.forEach(t => {
+                const btn = document.getElementById('tab-' + t);
+                if (btn) {
+                    btn.className = (t === tabId)
+                        ? "tab-active flex items-center px-6 py-3 text-left w-full transition-colors duration-150 font-medium text-sm"
+                        : "tab-inactive flex items-center px-6 py-3 text-left w-full transition-colors duration-150 font-medium text-sm";
+                }
+            });
+            const mobSel = document.getElementById('mobile-nav-select');
+            if (mobSel) mobSel.value = tabId;
+            window.renderAll();
+        }
+
+        function renderCompanyMonitorBanner() {
+            const monitored = getMonitoredCompanyFilter();
+            if (!monitored) return '';
+            return `
+                <div class="mb-4 bg-indigo-900 text-white px-4 py-2.5 rounded-xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <span class="text-xs sm:text-sm">Vista filtrada para empresa: <b>${monitored}</b></span>
+                    <div class="flex items-center gap-2">
+                        <button onclick="switchTab('portal')" class="text-xs bg-emerald-600 hover:bg-emerald-500 px-3 py-1 rounded font-semibold">Mi Portal</button>
+                        <button onclick="document.getElementById('user-role-selector').value='Admin 1 (Sistema)'; renderAll();" class="text-xs bg-indigo-700 hover:bg-indigo-600 px-3 py-1 rounded font-semibold">Ver Todo (Admin)</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderActiveTab() {
+            const contentDiv = document.getElementById('main-content');
+            if (!contentDiv) return;
+            const currentTab = window.appState.activeTab;
+            const currentFY = getActiveFiscalYear();
+            const monitoredCompany = getMonitoredCompanyFilter();
+
+            let activeImports = window.appState.imports.filter(imp => Number(imp.fiscalYear) === currentFY);
+            if (monitoredCompany) {
+                activeImports = activeImports.filter(imp => imp.company === monitoredCompany);
+            }
+
+            let html = renderCompanyMonitorBanner();
+
+            if (currentTab === 'quotas') {
+                html += renderQuotas();
+            } else if (currentTab === 'mod1') {
+                html += renderModule1(activeImports);
+            } else if (currentTab === 'mod2') {
+                html += renderModule2(activeImports);
+            } else if (currentTab === 'mod3') {
+                html += renderModule3(activeImports);
+            } else if (currentTab === 'portal') {
+                html += renderCompanyPortal();
+            } else if (currentTab === 'companies') {
+                html += renderCompanies();
+                setTimeout(() => renderDynamicSubstancePicker('cat'), 0);
+            } else if (currentTab === 'substances') {
+                html += renderSubstances();
+            } else if (currentTab === 'years') {
+                html += renderYears();
+            } else if (currentTab === 'audit') {
+                html += renderAudit();
+            }
+
+            contentDiv.innerHTML = html;
+        }
+
+        // =========================================================================
+        // 1. PESTAÑA INICIAL: ASIGNACIÓN DE CUOTA
+        // =========================================================================
+        function renderQuotas() {
+            const currentFY = getActiveFiscalYear();
+            const monitored = getMonitoredCompanyFilter();
+            const mod1Companies = window.appState.companies.filter(c => !Array.isArray(c.modules) || c.modules.includes('1'));
+            const mod1Substances = window.appState.substances.filter(s => String(s.module) === '1');
+
+            let quotasList = window.appState.quotas.filter(q => Number(q.year) === currentFY);
+            if (monitored) quotasList = quotasList.filter(q => q.company === monitored);
+
+            let html = `
+                <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <span class="text-xs font-bold uppercase tracking-wider text-indigo-600">Control Anual • Protocolo de Montreal</span>
+                        <h2 class="text-2xl font-bold text-gray-800">Asignación de Cuota (AF ${currentFY})</h2>
+                        <p class="text-sm text-gray-500 mt-0.5">Asigne o edite los límites en Toneladas por empresa y sustancia regulada.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="openQuickCompanyModal('1')" class="px-3.5 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg text-xs font-bold shadow-sm">
+                            + Agregar Empresa
+                        </button>
+                        <button onclick="switchTab('mod1')" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow-sm">
+                            Ver Módulo 1 →
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Formulario Asignación -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 mb-6">
+                    <form onsubmit="handleQuotaSubmit(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Empresa Importadora (Módulo 1)</label>
+                            <select id="quota_company" required onchange="updateQuotaSubstanceSelect()" class="w-full p-2.5 border border-gray-300 rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="" disabled selected>Seleccione empresa...</option>
+                                ${mod1Companies.map(c => `<option value="${c.name}">${c.name}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Sustancia Regulada</label>
+                            <select id="quota_substance" required class="w-full p-2.5 border border-gray-300 rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="" disabled selected>Seleccione gas...</option>
+                                ${mod1Substances.map(s => `<option value="${s.name}">${s.name} (${s.tariff})</option>`).join('')}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Cuota Anual (Toneladas)</label>
+                            <input type="number" step="0.01" min="0" id="quota_limit" required class="w-full p-2.5 border border-gray-300 rounded-lg text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Ej. 500.00">
+                        </div>
+                        <div>
+                            <button type="submit" class="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-sm shadow-sm">
+                                + Guardar Cuota
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Tabla Cuotas -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="px-5 py-3.5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                        <h3 class="font-bold text-gray-800 text-sm">Cuotas Activas (AF ${currentFY})</h3>
+                        <span class="text-xs font-semibold text-gray-500">${quotasList.length} cuotas</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500">
+                                    <th class="p-3.5 font-semibold">Empresa</th>
+                                    <th class="p-3.5 font-semibold">Sustancia</th>
+                                    <th class="p-3.5 font-semibold">Fracción Arancelaria</th>
+                                    <th class="p-3.5 font-semibold text-right">Cuota Permitida</th>
+                                    <th class="p-3.5 font-semibold text-right">Importado</th>
+                                    <th class="p-3.5 font-semibold text-right">Restante</th>
+                                    <th class="p-3.5 font-semibold text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 text-sm">
+            `;
+
+            if (quotasList.length === 0) {
+                html += `<tr><td colspan="7" class="p-8 text-center text-gray-400">Sin cuotas registradas en el AF ${currentFY}.</td></tr>`;
+            } else {
+                quotasList.forEach(q => {
+                    const subObj = window.appState.substances.find(s => s.name === q.substance && String(s.module) === '1');
+                    const tariff = subObj ? subObj.tariff : 'S/N';
+                    const used = window.appState.imports
+                        .filter(i => i.module === '1' && i.company === q.company && i.type === q.substance && Number(i.fiscalYear) === currentFY)
+                        .reduce((acc, cur) => acc + parseFloat(cur.qty || 0), 0);
+                    const remaining = parseFloat(q.limit) - used;
+                    const remClass = remaining < 0 ? 'text-red-600 font-extrabold' : 'text-emerald-700 font-extrabold';
+
+                    html += `
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-3.5 font-bold text-gray-900">${q.company}</td>
+                            <td class="p-3.5 font-semibold text-indigo-700">${q.substance}</td>
+                            <td class="p-3.5 font-mono text-xs text-gray-600">${tariff}</td>
+                            <td class="p-3.5 text-right font-bold">${Number(q.limit).toLocaleString('en-US', {minimumFractionDigits: 2})} Ton</td>
+                            <td class="p-3.5 text-right text-gray-700">${used.toLocaleString('en-US', {minimumFractionDigits: 2})} Ton</td>
+                            <td class="p-3.5 text-right ${remClass}">${remaining.toLocaleString('en-US', {minimumFractionDigits: 2})} Ton</td>
+                            <td class="p-3.5 text-right whitespace-nowrap">
+                                <button onclick="openEditQuotaModal('${q.id}')" class="px-2.5 py-1 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded font-bold text-xs mr-1.5">Editar Cuota</button>
+                                <button onclick="deleteQuota('${q.id}')" class="px-2.5 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded font-bold text-xs">Eliminar</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            html += `</tbody></table></div></div>`;
+            return html;
+        }
+
+        function updateQuotaSubstanceSelect() {
+            const compName = document.getElementById('quota_company')?.value;
+            const subSel = document.getElementById('quota_substance');
+            if (!subSel) return;
+            const compObj = window.appState.companies.find(c => c.name === compName);
+            let mod1Subs = window.appState.substances.filter(s => String(s.module) === '1');
+            if (compObj && Array.isArray(compObj.allowedSubstances) && compObj.allowedSubstances.length > 0) {
+                const filtered = mod1Subs.filter(s => compObj.allowedSubstances.includes(s.name));
+                if (filtered.length > 0) mod1Subs = filtered;
+            }
+            subSel.innerHTML = '<option value="" disabled selected>Seleccione gas...</option>' +
+                mod1Subs.map(s => `<option value="${s.name}">${s.name} (${s.tariff})</option>`).join('');
+        }
+
+        function handleQuotaSubmit(e) {
+            e.preventDefault();
+            const company = document.getElementById('quota_company').value;
+            const substance = document.getElementById('quota_substance').value;
+            const limit = parseFloat(document.getElementById('quota_limit').value);
+            const year = getActiveFiscalYear();
+            window.saveQuotaToDB(company, substance, limit, year);
+        }
+
+        // =========================================================================
+        // 2. MÓDULO 1: GASES REGULADOS (CON BALANCE EDITABLE Y ACTUALIZACIÓN AUTOMÁTICA)
+        // =========================================================================
+        function renderModule1(activeImports) {
+            const currentFY = getActiveFiscalYear();
+            const monitored = getMonitoredCompanyFilter();
+            const mod1Imports = activeImports.filter(i => String(i.module) === '1');
+
+            // Asegurar que todas las empresas del Módulo 1 aparezcan en el Balance aunque recién se hayan agregado
+            let mod1Companies = window.appState.companies.filter(c => !Array.isArray(c.modules) || c.modules.includes('1'));
+            if (monitored) mod1Companies = mod1Companies.filter(c => c.name === monitored);
+
+            // Construir filas del Balance por Empresa Importadora combinando cuotas existentes y empresas recién agregadas
+            let balanceRows = [];
+            let quotasFY = window.appState.quotas.filter(q => Number(q.year) === currentFY);
+            if (monitored) quotasFY = quotasFY.filter(q => q.company === monitored);
+
+            quotasFY.forEach(q => {
+                balanceRows.push({
+                    quotaId: q.id,
+                    company: q.company,
+                    substance: q.substance,
+                    limit: parseFloat(q.limit || 0)
+                });
+            });
+
+            // Si una empresa de Módulo 1 tiene sustancias autorizadas pero aún no tenía cuota en este AF, mostrarla para poder editar su cuota ahí mismo
+            mod1Companies.forEach(comp => {
+                const mod1Allowed = (comp.allowedSubstances || []).filter(sName => {
+                    const sObj = window.appState.substances.find(s => s.name === sName);
+                    return sObj && String(sObj.module) === '1';
+                });
+                if (mod1Allowed.length > 0) {
+                    mod1Allowed.forEach(subName => {
+                        const exists = balanceRows.some(r => r.company === comp.name && r.substance === subName);
+                        if (!exists) {
+                            balanceRows.push({
+                                quotaId: null,
+                                company: comp.name,
+                                substance: subName,
+                                limit: 0
+                            });
+                        }
+                    });
+                } else if (!balanceRows.some(r => r.company === comp.name)) {
+                    balanceRows.push({
+                        quotaId: null,
+                        company: comp.name,
+                        substance: 'Sin sustancia asignada',
+                        limit: 0
+                    });
+                }
+            });
+
+            let html = `
+                <div class="mb-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                    <div>
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-100 text-indigo-800">MÓDULO 1 • PROTOCOLO DE MONTREAL</span>
+                        <h2 class="text-2xl font-bold text-gray-800 mt-1">Gases Refrigerantes Regulados (AF ${currentFY})</h2>
+                        <p class="text-sm text-gray-500">Control de cuota permitida menos cantidad importada (en Toneladas) y fracción arancelaria.</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button onclick="openQuickCompanyModal('1')" class="px-3 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg text-xs font-bold">
+                            + Agregar Empresa
+                        </button>
+                        <button onclick="clearModuleData('1')" class="px-3 py-2 bg-white border border-red-200 hover:bg-red-50 text-red-600 rounded-lg text-xs font-bold">
+                            Vaciar Módulo 1
+                        </button>
+                        <button onclick="openModuleImportModal('1')" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow-sm">
+                            + Registrar Importación (Módulo 1)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tabla 1: Balance por Empresa Importadora (EDITABLE DIRECTAMENTE) -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
+                    <div class="px-5 py-3.5 border-b border-gray-100 flex justify-between items-center bg-indigo-50/50">
+                        <div>
+                            <h3 class="font-bold text-gray-800 text-sm">Balance por Empresa Importadora y Resta de Cuota (Editable)</h3>
+                            <p class="text-xs text-gray-500">Puede editar directamente el límite de cuota permitido de cada empresa desde la columna Acciones.</p>
+                        </div>
+                        <span class="text-xs font-bold text-indigo-700">${balanceRows.length} registros</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500">
+                                    <th class="p-3.5 font-semibold">Empresa Importadora</th>
+                                    <th class="p-3.5 font-semibold">Gas Regulado</th>
+                                    <th class="p-3.5 font-semibold">Fracción Arancelaria</th>
+                                    <th class="p-3.5 font-semibold text-right">Cuota Permitida</th>
+                                    <th class="p-3.5 font-semibold text-right">Importado (Resta)</th>
+                                    <th class="p-3.5 font-semibold text-right">Saldo Restante</th>
+                                    <th class="p-3.5 font-semibold text-right">Acciones (Editar Balance)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 text-sm">
+            `;
+
+            if (balanceRows.length === 0) {
+                html += `<tr><td colspan="7" class="p-8 text-center text-gray-400">No hay empresas o cuotas en el Módulo 1. Use "+ Agregar Empresa" para comenzar.</td></tr>`;
+            } else {
+                balanceRows.forEach(row => {
+                    const subObj = window.appState.substances.find(s => s.name === row.substance && String(s.module) === '1');
+                    const tariff = subObj ? subObj.tariff : '---';
+                    const used = mod1Imports
+                        .filter(i => i.company === row.company && i.type === row.substance)
+                        .reduce((acc, cur) => acc + parseFloat(cur.qty || 0), 0);
+                    const remaining = row.limit - used;
+                    const remClass = remaining < 0 ? 'text-red-600 font-extrabold' : 'text-emerald-700 font-extrabold';
+                    const safeComp = row.company.replace(/'/g, "\\'");
+                    const safeSub = row.substance.replace(/'/g, "\\'");
+
+                    html += `
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-3.5 font-bold text-gray-900">${row.company}</td>
+                            <td class="p-3.5 font-semibold text-indigo-700">${row.substance}</td>
+                            <td class="p-3.5 font-mono text-xs text-gray-600">${tariff}</td>
+                            <td class="p-3.5 text-right font-bold">${row.limit.toLocaleString('en-US', {minimumFractionDigits: 2})} Ton</td>
+                            <td class="p-3.5 text-right text-amber-700 font-bold">- ${used.toLocaleString('en-US', {minimumFractionDigits: 2})} Ton</td>
+                            <td class="p-3.5 text-right ${remClass}">${remaining.toLocaleString('en-US', {minimumFractionDigits: 2})} Ton</td>
+                            <td class="p-3.5 text-right whitespace-nowrap">
+                                ${row.quotaId
+                                    ? `<button onclick="openEditQuotaModal('${row.quotaId}')" class="px-2.5 py-1 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded font-bold text-xs mr-1.5">Editar Cuota</button>`
+                                    : `<button onclick="quickAssignQuotaFromMod1('${safeComp}', '${safeSub}')" class="px-2.5 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded font-bold text-xs mr-1.5">Asignar Cuota</button>`
+                                }
+                                <button onclick="deleteBalanceCompanyRowMod1('${safeComp}', '${safeSub}', '${row.quotaId || ''}')" class="px-2.5 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded font-bold text-xs">Eliminar</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            html += `
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tabla 2: Historial de Órdenes de Importación del Módulo 1 -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="px-5 py-3.5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                        <h3 class="font-bold text-gray-800 text-sm">Movimientos de Importación Registrados — Módulo 1 (AF ${currentFY})</h3>
+                        <span class="text-xs font-semibold text-gray-500">${mod1Imports.length} movimientos</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500">
+                                    <th class="p-3.5 font-semibold">Folio / QR</th>
+                                    <th class="p-3.5 font-semibold">Fecha Orden (AF)</th>
+                                    <th class="p-3.5 font-semibold">Empresa</th>
+                                    <th class="p-3.5 font-semibold">Gas Regulado</th>
+                                    <th class="p-3.5 font-semibold">Fracción Arancelaria</th>
+                                    <th class="p-3.5 font-semibold text-right">Cantidad (Ton)</th>
+                                    <th class="p-3.5 font-semibold text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 text-sm">
+            `;
+
+            if (mod1Imports.length === 0) {
+                html += `<tr><td colspan="7" class="p-8 text-center text-gray-400">No hay órdenes de importación registradas en el Módulo 1 para este año fiscal.</td></tr>`;
+            } else {
+                mod1Imports.forEach(imp => {
+                    html += `
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-3.5">
+                                <button onclick="openReceiptById('${imp.id}')" class="font-mono text-xs font-bold text-indigo-600 hover:underline bg-indigo-50 px-2 py-1 rounded">
+                                    ${imp.trackingNumber || 'VER-QR'}
+                                </button>
+                            </td>
+                            <td class="p-3.5 text-xs">
+                                <div class="font-bold text-gray-800">Orden: ${imp.orderDate}</div>
+                                <div class="text-gray-400">Llegada: ${imp.arrivalDate || 'Pendiente'}</div>
+                            </td>
+                            <td class="p-3.5 font-bold text-gray-900">${imp.company}</td>
+                            <td class="p-3.5 font-semibold text-indigo-700">${imp.type}</td>
+                            <td class="p-3.5 font-mono text-xs text-gray-600">${imp.tariff}</td>
+                            <td class="p-3.5 text-right font-bold text-gray-900">${Number(imp.qty).toLocaleString('en-US', {minimumFractionDigits: 2})} Ton</td>
+                            <td class="p-3.5 text-right whitespace-nowrap">
+                                <button onclick="openReceiptById('${imp.id}')" class="text-emerald-600 hover:text-emerald-800 font-bold text-xs mr-2">Recibo/QR</button>
+                                <button onclick="openEditImportModal('${imp.id}')" class="text-indigo-600 hover:text-indigo-900 font-bold text-xs mr-2">Editar</button>
+                                <button onclick="deleteImport('${imp.id}')" class="text-red-500 hover:text-red-700 font-bold text-xs">Eliminar</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            html += `</tbody></table></div></div>`;
+            return html;
+        }
+
+        window.quickAssignQuotaFromMod1 = function(companyName, substanceName) {
+            const currentFY = getActiveFiscalYear();
+            let sub = substanceName;
+            if (!sub || sub === 'Sin sustancia asignada') {
+                const firstMod1 = window.appState.substances.find(s => String(s.module) === '1');
+                sub = firstMod1 ? firstMod1.name : 'R-410A';
+            }
+            const newId = 'q_' + Date.now();
+            window.appState.quotas.push({
+                id: newId,
+                company: companyName,
+                substance: sub,
+                limit: 100,
+                year: currentFY
+            });
+            window.renderAll();
+            openEditQuotaModal(newId);
+        };
+
+        window.deleteBalanceCompanyRowMod1 = function(companyName, substanceName, quotaId) {
+            const currentFY = getActiveFiscalYear();
+            customConfirm(
+                'Eliminar del Balance (Módulo 1)',
+                `¿Desea eliminar a "${companyName}" (${substanceName}) del Balance del Módulo 1?`,
+                () => {
+                    // 1. Eliminar la cuota si existe
+                    if (quotaId) {
+                        window.appState.quotas = window.appState.quotas.filter(q => q.id !== quotaId);
+                    }
+                    window.appState.quotas = window.appState.quotas.filter(
+                        q => !(q.company === companyName && q.substance === substanceName && Number(q.year) === currentFY)
+                    );
+
+                    // 2. Actualizar la empresa para que no vuelva a regenerarse la fila en el Balance del Módulo 1
+                    const compObj = window.appState.companies.find(c => c.name === companyName);
+                    if (compObj) {
+                        if (Array.isArray(compObj.allowedSubstances)) {
+                            compObj.allowedSubstances = compObj.allowedSubstances.filter(s => s !== substanceName);
+                        }
+                        const remainingMod1Quotas = window.appState.quotas.some(
+                            q => q.company === companyName && Number(q.year) === currentFY
+                        );
+                        const remainingMod1Subs = (compObj.allowedSubstances || []).some(sName => {
+                            const sObj = window.appState.substances.find(s => s.name === sName);
+                            return sObj && String(sObj.module) === '1';
+                        });
+
+                        // Si ya no tiene más sustancias o cuotas en el Módulo 1, quitarla del Módulo 1
+                        if (!remainingMod1Quotas && !remainingMod1Subs) {
+                            if (Array.isArray(compObj.modules)) {
+                                compObj.modules = compObj.modules.filter(m => String(m) !== '1');
+                            }
+                            if (!compObj.modules || compObj.modules.length === 0) {
+                                window.appState.companies = window.appState.companies.filter(c => c.name !== companyName);
+                            }
+                        }
+                    }
+
+                    logAudit(`Eliminó del Balance del Módulo 1 a "${companyName}" (${substanceName})`, 'Módulo 1');
+                    window.renderAll();
+                    showToast(`Eliminado del Balance del Módulo 1: ${companyName}`);
+                }
+            );
+        };
+
+        // =========================================================================
+        // 3. MÓDULO 2: GASES REFRIGERANTES NO REGULADOS
+        // =========================================================================
+        function renderModule2(activeImports) {
+            const currentFY = getActiveFiscalYear();
+            const monitored = getMonitoredCompanyFilter();
+            const mod2Imports = activeImports.filter(i => String(i.module) === '2');
+
+            // Todas las empresas registradas en el Módulo 2 aparecen automáticamente
+            let mod2Companies = window.appState.companies.filter(c => Array.isArray(c.modules) && c.modules.includes('2'));
+            if (monitored) mod2Companies = mod2Companies.filter(c => c.name === monitored);
+
+            let html = `
+                <div class="mb-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                    <div>
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">MÓDULO 2 • GASES NO REGULADOS</span>
+                        <h2 class="text-2xl font-bold text-gray-800 mt-1">Importación de Gases No Regulados (AF ${currentFY})</h2>
+                        <p class="text-sm text-gray-500">Contabilización en Toneladas con su fracción arancelaria correspondiente.</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button onclick="openQuickCompanyModal('2')" class="px-3 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg text-xs font-bold">
+                            + Agregar Empresa
+                        </button>
+                        <button onclick="clearModuleData('2')" class="px-3 py-2 bg-white border border-red-200 hover:bg-red-50 text-red-600 rounded-lg text-xs font-bold">
+                            Vaciar Módulo 2
+                        </button>
+                        <button onclick="openModuleImportModal('2')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm">
+                            + Registrar Importación (Módulo 2)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Empresas Activas en Módulo 2 -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
+                    <div class="px-5 py-3.5 border-b border-gray-100 flex justify-between items-center bg-emerald-50/50">
+                        <h3 class="font-bold text-gray-800 text-sm">Empresas Importadoras en Módulo 2 y Total Acumulado (AF ${currentFY})</h3>
+                        <span class="text-xs font-bold text-emerald-700">${mod2Companies.length} empresas</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500">
+                                    <th class="p-3.5 font-semibold">Empresa Importadora</th>
+                                    <th class="p-3.5 font-semibold">Sustancias No Reguladas que Importa</th>
+                                    <th class="p-3.5 font-semibold text-right">Total Importado AF ${currentFY}</th>
+                                    <th class="p-3.5 font-semibold text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 text-sm">
+            `;
+
+            if (mod2Companies.length === 0) {
+                html += `<tr><td colspan="4" class="p-6 text-center text-gray-400">No hay empresas registradas para el Módulo 2.</td></tr>`;
+            } else {
+                mod2Companies.forEach(c => {
+                    const mod2Subs = (c.allowedSubstances || []).filter(sName => {
+                        const sObj = window.appState.substances.find(s => s.name === sName);
+                        return sObj && String(sObj.module) === '2';
+                    });
+                    const totalTon = mod2Imports
+                        .filter(i => i.company === c.name)
+                        .reduce((acc, cur) => acc + parseFloat(cur.qty || 0), 0);
+
+                    html += `
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-3.5 font-bold text-gray-900">${c.name}</td>
+                            <td class="p-3.5 text-xs text-gray-600">${mod2Subs.length > 0 ? mod2Subs.join(', ') : 'Todas las sustancias del Módulo 2'}</td>
+                            <td class="p-3.5 text-right font-extrabold text-emerald-700">${totalTon.toLocaleString('en-US', {minimumFractionDigits: 2})} Ton</td>
+                            <td class="p-3.5 text-right whitespace-nowrap">
+                                <button onclick="openEditCompanyModal('${c.id}')" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded font-bold text-xs">Editar Empresa</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            html += `
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Movimientos Detallados Módulo 2 -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="px-5 py-3.5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                        <h3 class="font-bold text-gray-800 text-sm">Movimientos de Importación Registrados — Módulo 2</h3>
+                        <span class="text-xs font-semibold text-gray-500">${mod2Imports.length} movimientos</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500">
+                                    <th class="p-3.5 font-semibold">Folio / QR</th>
+                                    <th class="p-3.5 font-semibold">Fecha Orden</th>
+                                    <th class="p-3.5 font-semibold">Empresa</th>
+                                    <th class="p-3.5 font-semibold">Gas No Regulado</th>
+                                    <th class="p-3.5 font-semibold">Fracción Arancelaria</th>
+                                    <th class="p-3.5 font-semibold text-right">Cantidad (Ton)</th>
+                                    <th class="p-3.5 font-semibold text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 text-sm">
+            `;
+
+            if (mod2Imports.length === 0) {
+                html += `<tr><td colspan="7" class="p-8 text-center text-gray-400">Sin movimientos registrados en el Módulo 2.</td></tr>`;
+            } else {
+                mod2Imports.forEach(imp => {
+                    html += `
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-3.5">
+                                <button onclick="openReceiptById('${imp.id}')" class="font-mono text-xs font-bold text-emerald-700 hover:underline bg-emerald-50 px-2 py-1 rounded">
+                                    ${imp.trackingNumber || 'VER-QR'}
+                                </button>
+                            </td>
+                            <td class="p-3.5 text-xs">
+                                <div class="font-bold text-gray-800">Orden: ${imp.orderDate}</div>
+                                <div class="text-gray-400">Llegada: ${imp.arrivalDate || 'Pendiente'}</div>
+                            </td>
+                            <td class="p-3.5 font-bold text-gray-900">${imp.company}</td>
+                            <td class="p-3.5 font-semibold text-emerald-700">${imp.type}</td>
+                            <td class="p-3.5 font-mono text-xs text-gray-600">${imp.tariff}</td>
+                            <td class="p-3.5 text-right font-bold text-gray-900">${Number(imp.qty).toLocaleString('en-US', {minimumFractionDigits: 2})} Ton</td>
+                            <td class="p-3.5 text-right whitespace-nowrap">
+                                <button onclick="openReceiptById('${imp.id}')" class="text-emerald-600 hover:text-emerald-800 font-bold text-xs mr-2">Recibo/QR</button>
+                                <button onclick="openEditImportModal('${imp.id}')" class="text-indigo-600 hover:text-indigo-900 font-bold text-xs mr-2">Editar</button>
+                                <button onclick="deleteImport('${imp.id}')" class="text-red-500 hover:text-red-700 font-bold text-xs">Eliminar</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            html += `</tbody></table></div></div>`;
+            return html;
+        }
+
+        // =========================================================================
+        // 4. MÓDULO 3: EQUIPOS Y APARATOS (SOLO UNIDADES)
+        // =========================================================================
+        function renderModule3(activeImports) {
+            const currentFY = getActiveFiscalYear();
+            const monitored = getMonitoredCompanyFilter();
+            const mod3Imports = activeImports.filter(i => String(i.module) === '3');
+
+            let mod3Companies = window.appState.companies.filter(c => Array.isArray(c.modules) && c.modules.includes('3'));
+            if (monitored) mod3Companies = mod3Companies.filter(c => c.name === monitored);
+
+            let html = `
+                <div class="mb-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                    <div>
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-800">MÓDULO 3 • EQUIPOS Y APARATOS (UNIDADES)</span>
+                        <h2 class="text-2xl font-bold text-gray-800 mt-1">Equipos con Gases Refrigerantes (AF ${currentFY})</h2>
+                        <p class="text-sm text-gray-500">Medición exclusiva en Unidades de aparatos con gases regulados o no regulados.</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button onclick="openQuickCompanyModal('3')" class="px-3 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg text-xs font-bold">
+                            + Agregar Empresa
+                        </button>
+                        <button onclick="clearModuleData('3')" class="px-3 py-2 bg-white border border-red-200 hover:bg-red-50 text-red-600 rounded-lg text-xs font-bold">
+                            Vaciar Módulo 3
+                        </button>
+                        <button onclick="openModuleImportModal('3')" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-bold shadow-sm">
+                            + Registrar Importación (Módulo 3)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Empresas Activas en Módulo 3 -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
+                    <div class="px-5 py-3.5 border-b border-gray-100 flex justify-between items-center bg-purple-50/50">
+                        <h3 class="font-bold text-gray-800 text-sm">Empresas Importadoras de Equipos en Módulo 3 (AF ${currentFY})</h3>
+                        <span class="text-xs font-bold text-purple-700">${mod3Companies.length} empresas</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500">
+                                    <th class="p-3.5 font-semibold">Empresa Importadora</th>
+                                    <th class="p-3.5 font-semibold">Categorías de Equipos Autorizadas</th>
+                                    <th class="p-3.5 font-semibold text-right">Total Unidades AF ${currentFY}</th>
+                                    <th class="p-3.5 font-semibold text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 text-sm">
+            `;
+
+            if (mod3Companies.length === 0) {
+                html += `<tr><td colspan="4" class="p-6 text-center text-gray-400">No hay empresas registradas para el Módulo 3.</td></tr>`;
+            } else {
+                mod3Companies.forEach(c => {
+                    const mod3Subs = (c.allowedSubstances || []).filter(sName => {
+                        const sObj = window.appState.substances.find(s => s.name === sName);
+                        return sObj && String(sObj.module) === '3';
+                    });
+                    const totalUnits = mod3Imports
+                        .filter(i => i.company === c.name)
+                        .reduce((acc, cur) => acc + parseInt(cur.qty || 0, 10), 0);
+
+                    html += `
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-3.5 font-bold text-gray-900">${c.name}</td>
+                            <td class="p-3.5 text-xs text-gray-600">${mod3Subs.length > 0 ? mod3Subs.join(', ') : 'Todos los equipos del catálogo Módulo 3'}</td>
+                            <td class="p-3.5 text-right font-extrabold text-purple-700">${totalUnits.toLocaleString('en-US')} Unidades</td>
+                            <td class="p-3.5 text-right whitespace-nowrap">
+                                <button onclick="openEditCompanyModal('${c.id}')" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded font-bold text-xs">Editar Empresa</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            html += `
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Movimientos Detallados Módulo 3 -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="px-5 py-3.5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                        <h3 class="font-bold text-gray-800 text-sm">Movimientos de Importación Registrados — Módulo 3</h3>
+                        <span class="text-xs font-semibold text-gray-500">${mod3Imports.length} movimientos</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500">
+                                    <th class="p-3.5 font-semibold">Folio / QR</th>
+                                    <th class="p-3.5 font-semibold">Fecha Orden</th>
+                                    <th class="p-3.5 font-semibold">Empresa</th>
+                                    <th class="p-3.5 font-semibold">Equipo / Descripción</th>
+                                    <th class="p-3.5 font-semibold">Refrigerante</th>
+                                    <th class="p-3.5 font-semibold">Arancel</th>
+                                    <th class="p-3.5 font-semibold text-right">Unidades</th>
+                                    <th class="p-3.5 font-semibold text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 text-sm">
+            `;
+
+            if (mod3Imports.length === 0) {
+                html += `<tr><td colspan="8" class="p-8 text-center text-gray-400">Sin movimientos registrados en el Módulo 3.</td></tr>`;
+            } else {
+                mod3Imports.forEach(imp => {
+                    html += `
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-3.5">
+                                <button onclick="openReceiptById('${imp.id}')" class="font-mono text-xs font-bold text-purple-700 hover:underline bg-purple-50 px-2 py-1 rounded">
+                                    ${imp.trackingNumber || 'VER-QR'}
+                                </button>
+                            </td>
+                            <td class="p-3.5 text-xs">
+                                <div class="font-bold text-gray-800">Orden: ${imp.orderDate}</div>
+                                <div class="text-gray-400">Llegada: ${imp.arrivalDate || 'Pendiente'}</div>
+                            </td>
+                            <td class="p-3.5 font-bold text-gray-900">${imp.company}</td>
+                            <td class="p-3.5">
+                                <div class="font-semibold text-gray-800 text-xs">${imp.type}</div>
+                                <div class="text-xs text-purple-700">${imp.productDescription || ''}</div>
+                            </td>
+                            <td class="p-3.5 text-xs">
+                                <span class="font-bold">${imp.contained || 'N/A'}</span>
+                                <span class="block text-[10px] text-gray-500">${imp.regStatus || ''}</span>
+                            </td>
+                            <td class="p-3.5 font-mono text-xs text-gray-600">${imp.tariff}</td>
+                            <td class="p-3.5 text-right font-bold text-gray-900">${ parseInt(imp.qty, 10).toLocaleString('en-US') } Unid.</td>
+                            <td class="p-3.5 text-right whitespace-nowrap">
+                                <button onclick="openReceiptById('${imp.id}')" class="text-emerald-600 hover:text-emerald-800 font-bold text-xs mr-2">Recibo/QR</button>
+                                <button onclick="openEditImportModal('${imp.id}')" class="text-indigo-600 hover:text-indigo-900 font-bold text-xs mr-2">Editar</button>
+                                <button onclick="deleteImport('${imp.id}')" class="text-red-500 hover:text-red-700 font-bold text-xs">Eliminar</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            html += `</tbody></table></div></div>`;
+            return html;
+        }
+
+        // =========================================================================
+        // 5. VISTA DE EMPRESA (PORTAL DE MONITOREO PERSONAL Y BUZÓN DE RECIBOS)
+        // =========================================================================
+        function renderCompanyPortal() {
+            const currentFY = getActiveFiscalYear();
+            const companies = window.appState.companies;
+            if (companies.length === 0) {
+                return `<div class="bg-white p-8 rounded-xl border text-center text-gray-500">No hay empresas registradas. Agregue una empresa primero.</div>`;
+            }
+
+            const monitored = getMonitoredCompanyFilter();
+            const selectedName = monitored || window.appState.selectedPortalCompany || companies[0].name;
+            const compObj = companies.find(c => c.name === selectedName) || companies[0];
+            const compImports = window.appState.imports.filter(i => i.company === compObj.name && Number(i.fiscalYear) === currentFY);
+            const compQuotas = window.appState.quotas.filter(q => q.company === compObj.name && Number(q.year) === currentFY);
+
+            let html = `
+                <div class="mb-6 bg-slate-900 text-white p-5 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-300">Portal de Monitoreo Personal y Comprobantes</span>
+                        <h2 class="text-xl font-bold mt-0.5">${compObj.name} — Año Fiscal ${currentFY}</h2>
+                        <div class="flex flex-wrap gap-1.5 mt-2">
+                            ${(compObj.modules || ['1']).map(m => `<span class="px-2 py-0.5 bg-white/10 rounded text-xs font-semibold">Módulo ${m}</span>`).join('')}
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <label class="text-xs text-slate-300 font-semibold">Empresa:</label>
+                        <select onchange="window.appState.selectedPortalCompany=this.value; renderAll();" class="p-2 rounded-lg bg-slate-800 text-white border border-slate-700 text-xs font-bold">
+                            ${companies.map(c => `<option value="${c.name}" ${c.name === compObj.name ? 'selected' : ''}>${c.name}</option>`).join('')}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Balance de Cuotas de la Empresa -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 mb-6">
+                    <h3 class="font-bold text-gray-800 text-sm mb-3">Estado de Cuotas Autorizadas (Módulo 1 - AF ${currentFY})</h3>
+                    ${compQuotas.length === 0
+                        ? `<p class="text-xs text-gray-400">Esta empresa no tiene cuotas asignadas en el Módulo 1 para este año fiscal.</p>`
+                        : `<div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            ${compQuotas.map(q => {
+                                const used = compImports.filter(i => i.module === '1' && i.type === q.substance).reduce((a,b) => a + parseFloat(b.qty||0), 0);
+                                const rem = parseFloat(q.limit) - used;
+                                return `
+                                    <div class="p-3.5 rounded-lg border border-gray-200 bg-gray-50">
+                                        <div class="font-bold text-indigo-700 text-sm">${q.substance}</div>
+                                        <div class="text-xs text-gray-500 mt-1">Asignada: <b>${q.limit} Ton</b> | Usado: <b>${used} Ton</b></div>
+                                        <div class="text-sm font-extrabold text-emerald-700 mt-1">Disponible: ${rem.toFixed(2)} Ton</div>
+                                    </div>
+                                `;
+                            }).join('')}
+                           </div>`
+                    }
+                </div>
+
+                <!-- Buzón de Comprobantes QR Entregados a la Empresa -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="px-5 py-3.5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                        <h3 class="font-bold text-gray-800 text-sm">Buzón de Comprobantes Digitales Recibidos (${compObj.name})</h3>
+                        <span class="text-xs font-semibold text-emerald-700">${compImports.length} recibos oficiales</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500">
+                                    <th class="p-3.5 font-semibold">Folio Oficial</th>
+                                    <th class="p-3.5 font-semibold">Módulo</th>
+                                    <th class="p-3.5 font-semibold">Sustancia / Equipo</th>
+                                    <th class="p-3.5 font-semibold">Fecha Orden</th>
+                                    <th class="p-3.5 font-semibold text-right">Cantidad</th>
+                                    <th class="p-3.5 font-semibold text-right">Comprobante</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 text-sm">
+                                ${compImports.length === 0
+                                    ? `<tr><td colspan="6" class="p-6 text-center text-gray-400">No hay comprobantes registrados para esta empresa en el AF ${currentFY}.</td></tr>`
+                                    : compImports.map(imp => `
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="p-3.5 font-mono text-xs font-bold text-indigo-700">${imp.trackingNumber}</td>
+                                            <td class="p-3.5 text-xs font-semibold">Módulo ${imp.module}</td>
+                                            <td class="p-3.5 font-semibold">${imp.type}</td>
+                                            <td class="p-3.5 text-xs">${imp.orderDate}</td>
+                                            <td class="p-3.5 text-right font-bold">${imp.qty} ${imp.module === '3' ? 'Unid.' : 'Ton'}</td>
+                                            <td class="p-3.5 text-right">
+                                                <button onclick="openReceiptById('${imp.id}', 'company')" class="px-3 py-1 bg-indigo-600 text-white rounded text-xs font-bold hover:bg-indigo-700">
+                                                    Ver Ejemplar Empresa
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    `).join('')
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            return html;
+        }
+
+        // =========================================================================
+        // 6. CATÁLOGO DE EMPRESAS (SIMPLIFICADO, SIN GIRO, DESPLIEGUE LIMPIO)
+        // =========================================================================
+        function renderCompanies() {
+            const companies = window.appState.companies;
+            let html = `
+                <div class="mb-6">
+                    <span class="text-xs font-bold uppercase tracking-wider text-indigo-600">Configuración de Padrón</span>
+                    <h2 class="text-2xl font-bold text-gray-800">Catálogo de Empresas Importadoras</h2>
+                    <p class="text-sm text-gray-500">Agregue o edite empresas y seleccione en qué módulos operan. Los módulos se actualizarán automáticamente.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                    <!-- Formulario lateral compacto para Agregar Empresa -->
+                    <div class="lg:col-span-5 bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                        <h3 class="font-bold text-gray-800 text-sm mb-3">Registrar Nueva Empresa</h3>
+                        <form onsubmit="handleAddCompanyFromCatalog(event)" class="space-y-3.5">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">Nombre de la Empresa <span class="text-red-500">*</span></label>
+                                <input type="text" id="cat_comp_name" required class="w-full p-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Ej. Refrigeración Industrial S.A.">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1.5">Módulos que Importa <span class="text-red-500">*</span></label>
+                                <div class="grid grid-cols-3 gap-2 bg-gray-50 p-2.5 rounded-lg border border-gray-200 text-xs">
+                                    <label class="flex items-center space-x-1.5 cursor-pointer">
+                                        <input type="checkbox" id="cat_mod1" value="1" checked onchange="renderDynamicSubstancePicker('cat')" class="rounded text-indigo-600 h-4 w-4">
+                                        <span class="font-semibold">Módulo 1</span>
+                                    </label>
+                                    <label class="flex items-center space-x-1.5 cursor-pointer">
+                                        <input type="checkbox" id="cat_mod2" value="2" onchange="renderDynamicSubstancePicker('cat')" class="rounded text-emerald-600 h-4 w-4">
+                                        <span class="font-semibold">Módulo 2</span>
+                                    </label>
+                                    <label class="flex items-center space-x-1.5 cursor-pointer">
+                                        <input type="checkbox" id="cat_mod3" value="3" onchange="renderDynamicSubstancePicker('cat')" class="rounded text-purple-600 h-4 w-4">
+                                        <span class="font-semibold">Módulo 3</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Selector compacto de sustancias de los módulos elegidos -->
+                            <div class="border border-gray-200 bg-gray-50/60 rounded-lg p-3 space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-bold text-gray-700">Sustancias / Equipos del Módulo</span>
+                                    <div class="flex items-center gap-2">
+                                        <span id="cat_sub_count_badge" class="text-[11px] font-bold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full">0 seleccionadas</span>
+                                        <button type="button" onclick="toggleAllVisibleSubstances('cat', true)" class="text-[11px] text-indigo-600 hover:underline font-semibold">Todas</button>
+                                        <button type="button" onclick="toggleAllVisibleSubstances('cat', false)" class="text-[11px] text-gray-500 hover:underline">Limpiar</button>
+                                    </div>
+                                </div>
+                                <input type="text" id="cat_sub_search" oninput="filterDynamicSubstancePicker('cat')" class="w-full p-1.5 border border-gray-300 rounded text-xs bg-white outline-none" placeholder="Buscar sustancia o equipo...">
+                                <div id="cat_substances_container" class="max-h-40 overflow-y-auto space-y-1 pr-1"></div>
+                            </div>
+
+                            <button type="submit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-sm shadow-sm">
+                                + Agregar Empresa y Actualizar Módulos
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Tabla Compacta de Empresas Existentes -->
+                    <div class="lg:col-span-7 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                        <div class="px-5 py-3.5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                            <h3 class="font-bold text-gray-800 text-sm">Empresas Registradas (${companies.length})</h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500">
+                                        <th class="p-3.5 font-semibold">Empresa</th>
+                                        <th class="p-3.5 font-semibold">Módulos</th>
+                                        <th class="p-3.5 font-semibold">Sustancias / Equipos Autorizados</th>
+                                        <th class="p-3.5 font-semibold text-right">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100 text-sm">
+            `;
+
+            if (companies.length === 0) {
+                html += `<tr><td colspan="4" class="p-8 text-center text-gray-400">No hay empresas registradas.</td></tr>`;
+            } else {
+                companies.forEach(c => {
+                    const mods = (c.modules || ['1']).map(m => {
+                        const color = m === '1' ? 'bg-indigo-100 text-indigo-800' : (m === '2' ? 'bg-emerald-100 text-emerald-800' : 'bg-purple-100 text-purple-800');
+                        return `<span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${color} mr-1">M${m}</span>`;
+                    }).join('');
+
+                    const subs = c.allowedSubstances || [];
+                    const previewSubs = subs.slice(0, 3).join(', ');
+                    const extraCount = subs.length > 3 ? ` <span class="text-indigo-600 font-bold">(+${subs.length - 3} más)</span>` : '';
+
+                    html += `
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-3.5 font-bold text-gray-900">${c.name}</td>
+                            <td class="p-3.5 whitespace-nowrap">${mods}</td>
+                            <td class="p-3.5 text-xs text-gray-600 max-w-xs">
+                                ${subs.length > 0 ? `${previewSubs}${extraCount}` : '<span class="text-gray-400">Todas las del módulo</span>'}
+                            </td>
+                            <td class="p-3.5 text-right whitespace-nowrap">
+                                <button onclick="openEditCompanyModal('${c.id}')" class="px-2.5 py-1 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded font-bold text-xs mr-1.5">Editar</button>
+                                <button onclick="deleteCompany('${c.id}')" class="px-2.5 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded font-bold text-xs">Eliminar</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            html += `</tbody></table></div></div></div>`;
+            return html;
+        }
+
+        // Despliegue Dinámico Compacto de Sustancias según Módulos Seleccionados
+        window.renderDynamicSubstancePicker = function(prefix) {
+            const mod1Checked = document.getElementById(prefix === 'edit' ? 'edit-comp-mod1' : `${prefix}_mod1`)?.checked;
+            const mod2Checked = document.getElementById(prefix === 'edit' ? 'edit-comp-mod2' : `${prefix}_mod2`)?.checked;
+            const mod3Checked = document.getElementById(prefix === 'edit' ? 'edit-comp-mod3' : `${prefix}_mod3`)?.checked;
+
+            const selectedMods = [];
+            if (mod1Checked) selectedMods.push('1');
+            if (mod2Checked) selectedMods.push('2');
+            if (mod3Checked) selectedMods.push('3');
+
+            const container = document.getElementById(`${prefix}_substances_container`);
+            const badge = document.getElementById(`${prefix}_sub_count_badge`);
+            const searchVal = (document.getElementById(`${prefix}_sub_search`)?.value || '').toLowerCase().trim();
+            if (!container) return;
+
+            const setRef = window.tempSelectedSubstances[prefix];
+            const availableSubs = window.appState.substances.filter(s => selectedMods.includes(String(s.module)));
+
+            // Limpiar del Set sustancias de módulos que fueron desmarcados
+            Array.from(setRef).forEach(sName => {
+                const sObj = window.appState.substances.find(x => x.name === sName);
+                if (sObj && !selectedMods.includes(String(sObj.module))) {
+                    setRef.delete(sName);
+                }
+            });
+
+            if (badge) badge.innerText = `${setRef.size} seleccionadas`;
+
+            if (selectedMods.length === 0) {
+                container.innerHTML = `<div class="text-xs text-amber-700 p-2">Seleccione al menos un módulo (1, 2 o 3).</div>`;
+                return;
+            }
+
+            const filteredSubs = availableSubs.filter(s =>
+                s.name.toLowerCase().includes(searchVal) || (s.tariff || '').toLowerCase().includes(searchVal)
+            );
+
+            let html = '';
+            selectedMods.forEach(m => {
+                const group = filteredSubs.filter(s => String(s.module) === m);
+                if (group.length === 0) return;
+                const modTitle = m === '1' ? 'Módulo 1: Regulados' : (m === '2' ? 'Módulo 2: No Regulados' : 'Módulo 3: Equipos');
+                html += `<div class="text-[10px] font-bold uppercase text-indigo-700 bg-indigo-50 px-2 py-1 rounded mt-1">${modTitle}</div>`;
+                group.forEach(s => {
+                    const checked = setRef.has(s.name) ? 'checked' : '';
+                    const safeName = s.name.replace(/'/g, "\\'");
+                    html += `
+                        <label class="flex items-center justify-between px-2 py-1 bg-white hover:bg-gray-50 rounded border border-gray-100 cursor-pointer text-xs">
+                            <span class="flex items-center space-x-2 truncate pr-2">
+                                <input type="checkbox" ${checked} onchange="toggleSingleSubstance('${prefix}', '${safeName}', this.checked)" class="rounded text-indigo-600 h-3.5 w-3.5">
+                                <span class="truncate font-medium text-gray-800">${s.name}</span>
+                            </span>
+                            <span class="font-mono text-[10px] text-gray-400 shrink-0">${s.tariff}</span>
+                        </label>
+                    `;
+                });
+            });
+
+            container.innerHTML = html || `<div class="text-xs text-gray-400 p-2">Sin resultados para ese filtro.</div>`;
+        };
+
+        window.toggleSingleSubstance = function(prefix, subName, isChecked) {
+            const setRef = window.tempSelectedSubstances[prefix];
+            if (isChecked) setRef.add(subName);
+            else setRef.delete(subName);
+            const badge = document.getElementById(`${prefix}_sub_count_badge`);
+            if (badge) badge.innerText = `${setRef.size} seleccionadas`;
+        };
+
+        window.toggleAllVisibleSubstances = function(prefix, selectAll) {
+            const mod1Checked = document.getElementById(prefix === 'edit' ? 'edit-comp-mod1' : `${prefix}_mod1`)?.checked;
+            const mod2Checked = document.getElementById(prefix === 'edit' ? 'edit-comp-mod2' : `${prefix}_mod2`)?.checked;
+            const mod3Checked = document.getElementById(prefix === 'edit' ? 'edit-comp-mod3' : `${prefix}_mod3`)?.checked;
+            const selectedMods = [];
+            if (mod1Checked) selectedMods.push('1');
+            if (mod2Checked) selectedMods.push('2');
+            if (mod3Checked) selectedMods.push('3');
+
+            const setRef = window.tempSelectedSubstances[prefix];
+            if (!selectAll) {
+                setRef.clear();
+            } else {
+                window.appState.substances
+                    .filter(s => selectedMods.includes(String(s.module)))
+                    .forEach(s => setRef.add(s.name));
+            }
+            renderDynamicSubstancePicker(prefix);
+        };
+
+        window.filterDynamicSubstancePicker = function(prefix) {
+            renderDynamicSubstancePicker(prefix);
+        };
+
+        function handleAddCompanyFromCatalog(e) {
+            e.preventDefault();
+            const name = document.getElementById('cat_comp_name').value.trim();
+            const modules = [];
+            if (document.getElementById('cat_mod1').checked) modules.push('1');
+            if (document.getElementById('cat_mod2').checked) modules.push('2');
+            if (document.getElementById('cat_mod3').checked) modules.push('3');
+            if (modules.length === 0) {
+                customAlert('Atención', 'Seleccione al menos un módulo (1, 2 o 3).');
+                return;
+            }
+            const allowedSubstances = Array.from(window.tempSelectedSubstances.cat);
+            window.saveCompanyToDB(name, modules, allowedSubstances);
+            document.getElementById('cat_comp_name').value = '';
+            window.tempSelectedSubstances.cat.clear();
+            renderDynamicSubstancePicker('cat');
+        }
+
+        // =========================================================================
+        // 7. CATÁLOGO DE SUSTANCIAS Y EQUIPOS (MÓDULOS 1, 2 Y 3)
+        // =========================================================================
+        function renderSubstances() {
+            const subs = window.appState.substances;
+            let html = `
+                <div class="mb-6">
+                    <span class="text-xs font-bold uppercase tracking-wider text-indigo-600">Arancel Centroamericano UTOH (Sin CFC)</span>
+                    <h2 class="text-2xl font-bold text-gray-800">Catálogo de Sustancias y Equipos (${subs.length})</h2>
+                </div>
+
+                <!-- Formulario Agregar Sustancia o Equipo -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 mb-6">
+                    <form onsubmit="handleAddSubstance(event)" class="grid grid-cols-1 sm:grid-cols-5 gap-3 items-end">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Nombre de Sustancia / Equipo</label>
+                            <input type="text" id="sub_name" required class="w-full p-2 border border-gray-300 rounded-lg text-sm" placeholder="Ej. R-410A o Split System">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Fracción Arancelaria</label>
+                            <input type="text" id="sub_tariff" required class="w-full p-2 border border-gray-300 rounded-lg text-sm font-mono" placeholder="3827.63.00.00">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Módulo</label>
+                            <select id="sub_module" onchange="document.getElementById('sub_ref_wrap').classList.toggle('hidden', this.value !== '3')" class="w-full p-2 border border-gray-300 rounded-lg text-sm bg-white">
+                                <option value="1">Módulo 1: Gas Regulado</option>
+                                <option value="2">Módulo 2: Gas No Regulado</option>
+                                <option value="3">Módulo 3: Equipo / Aparato</option>
+                            </select>
+                        </div>
+                        <div id="sub_ref_wrap" class="hidden">
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Gas que usa el Equipo</label>
+                            <input type="text" id="sub_refrigerant" class="w-full p-2 border border-gray-300 rounded-lg text-sm" placeholder="Ej. R-410A">
+                        </div>
+                        <div>
+                            <button type="submit" class="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-sm">
+                                + Agregar al Catálogo
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500">
+                                    <th class="p-3.5 font-semibold">Nombre / Descripción</th>
+                                    <th class="p-3.5 font-semibold">Fracción Arancelaria</th>
+                                    <th class="p-3.5 font-semibold">Clasificación</th>
+                                    <th class="p-3.5 font-semibold text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 text-sm">
+                                ${subs.map(s => `
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="p-3.5 font-bold text-gray-900">
+                                            ${s.name}
+                                            ${s.module === '3' && s.refrigerant ? `<span class="block text-xs text-purple-600 font-normal">Refrigerante: ${s.refrigerant}</span>` : ''}
+                                        </td>
+                                        <td class="p-3.5 font-mono text-xs text-gray-700">${s.tariff}</td>
+                                        <td class="p-3.5 text-xs font-bold">Módulo ${s.module}</td>
+                                        <td class="p-3.5 text-right whitespace-nowrap">
+                                            <button onclick="openEditSubstanceModal('${s.id}')" class="text-indigo-600 hover:underline font-bold text-xs mr-3">Editar</button>
+                                            <button onclick="deleteSubstance('${s.id}')" class="text-red-500 hover:underline font-bold text-xs">Eliminar</button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            return html;
+        }
+
+        function handleAddSubstance(e) {
+            e.preventDefault();
+            const name = document.getElementById('sub_name').value.trim();
+            const tariff = document.getElementById('sub_tariff').value.trim();
+            const module = document.getElementById('sub_module').value;
+            const refrigerant = document.getElementById('sub_refrigerant')?.value.trim() || '';
+            window.appState.substances.unshift({
+                id: 'sub_' + Date.now(),
+                name,
+                tariff,
+                module,
+                refrigerant
+            });
+            logAudit(`Agregó sustancia/equipo ${name} (${tariff}) al Módulo ${module}`, 'Catálogo');
+            showToast(`Sustancia agregada al Módulo ${module}`);
+            window.renderAll();
+        }
+
+        // =========================================================================
+        // 8. AÑOS FISCALES Y AUDITORÍA
+        // =========================================================================
+        function renderYears() {
+            const years = [...window.appState.fiscalYears].sort((a,b) => a.year - b.year);
+            return `
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Gestor de Años Fiscales (2 Ene - 31 Dic)</h2>
+                    <p class="text-sm text-gray-500">Agregue o edite años fiscales para el control de importaciones.</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 mb-6 max-w-md">
+                    <form onsubmit="handleAddYear(event)" class="flex gap-2">
+                        <input type="number" id="new_fy_input" required min="2020" max="2100" placeholder="Ej. 2028" class="flex-1 p-2 border border-gray-300 rounded-lg text-sm font-bold">
+                        <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700">+ Agregar Año</button>
+                    </form>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden max-w-xl">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 border-b text-xs uppercase text-gray-500">
+                                <th class="p-3.5">Año Fiscal</th>
+                                <th class="p-3.5">Vigencia Oficial</th>
+                                <th class="p-3.5 text-right">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y text-sm">
+                            ${years.map(y => `
+                                <tr>
+                                    <td class="p-3.5 font-extrabold text-indigo-700">AF ${y.year}</td>
+                                    <td class="p-3.5 text-xs text-gray-600">2 de Enero ${y.year} — 31 de Diciembre ${y.year}</td>
+                                    <td class="p-3.5 text-right">
+                                        <button onclick="openEditYearModal('${y.id}')" class="text-indigo-600 hover:underline text-xs font-bold">Editar</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function handleAddYear(e) {
+            e.preventDefault();
+            const yr = parseInt(document.getElementById('new_fy_input').value, 10);
+            if (window.appState.fiscalYears.some(x => Number(x.year) === yr)) {
+                customAlert('Aviso', `El Año Fiscal ${yr} ya existe.`);
+                return;
+            }
+            window.appState.fiscalYears.push({ id: 'fy_' + Date.now(), year: yr });
+            logAudit(`Agregó Año Fiscal ${yr}`, 'Años Fiscales');
+            showToast(`Año Fiscal ${yr} agregado`);
+            document.getElementById('global-fiscal-year').value = yr;
+            window.renderAll();
+        }
+
+        function renderAudit() {
+            return `
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Registro de Auditoría de Administradores</h2>
+                    <p class="text-sm text-gray-500">Bitácora en tiempo real de quién ha modificado cuotas, empresas o importaciones.</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 border-b text-xs uppercase text-gray-500">
+                                <th class="p-3.5">Fecha / Hora</th>
+                                <th class="p-3.5">Usuario / Administrador</th>
+                                <th class="p-3.5">Módulo</th>
+                                <th class="p-3.5">Movimiento Registrado</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y text-sm">
+                            ${window.appState.auditLogs.map(a => `
+                                <tr>
+                                    <td class="p-3.5 font-mono text-xs text-gray-500 whitespace-nowrap">${a.timestamp}</td>
+                                    <td class="p-3.5 font-bold text-indigo-700 whitespace-nowrap">${a.user}</td>
+                                    <td class="p-3.5 text-xs font-semibold">${a.module}</td>
+                                    <td class="p-3.5 text-xs text-gray-700">${a.action}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // =========================================================================
+        // 9. GUARDADO DE EMPRESAS, CUOTAS E IMPORTACIONES (SINCRONIZACIÓN TOTAL)
+        // =========================================================================
+        window.saveCompanyToDB = function(name, modules, allowedSubstances = []) {
+            const cleanName = (name || '').trim();
+            if (!cleanName) return;
+
+            const existing = window.appState.companies.find(c => c.name.toLowerCase() === cleanName.toLowerCase());
+            if (existing) {
+                existing.modules = modules;
+                existing.allowedSubstances = allowedSubstances;
+            } else {
+                window.appState.companies.push({
+                    id: 'comp_' + Date.now(),
+                    name: cleanName,
+                    modules: modules,
+                    allowedSubstances: allowedSubstances
+                });
+            }
+
+            // Si la empresa opera en el Módulo 1 y se seleccionaron sustancias reguladas, asegurar que aparezca en el Balance del Módulo 1
+            const currentFY = getActiveFiscalYear();
+            if (modules.includes('1') && allowedSubstances.length > 0) {
+                allowedSubstances.forEach(subName => {
+                    const subObj = window.appState.substances.find(s => s.name === subName && String(s.module) === '1');
+                    if (subObj) {
+                        const hasQuota = window.appState.quotas.some(q => q.company === cleanName && q.substance === subName && Number(q.year) === currentFY);
+                        if (!hasQuota) {
+                            window.appState.quotas.push({
+                                id: 'q_' + Date.now() + Math.floor(Math.random() * 1000),
+                                company: cleanName,
+                                substance: subName,
+                                limit: 0,
+                                year: currentFY
+                            });
+                        }
+                    }
+                });
+            }
+
+            window.appState.selectedPortalCompany = cleanName;
+            logAudit(`Registró/actualizó empresa "${cleanName}" en Módulos [${modules.join(', ')}]`, 'Empresas');
+            showToast(`Empresa "${cleanName}" actualizada en los módulos`);
+            window.renderAll();
+        };
+
+        window.saveQuotaToDB = function(company, substance, limit, year) {
+            const existing = window.appState.quotas.find(q => q.company === company && q.substance === substance && Number(q.year) === Number(year));
+            if (existing) {
+                existing.limit = Number(limit);
+                logAudit(`Actualizó cuota de ${company} (${substance}) a ${limit} Ton en AF ${year}`, 'Asignación de Cuota');
+            } else {
+                window.appState.quotas.push({
+                    id: 'q_' + Date.now(),
+                    company,
+                    substance,
+                    limit: Number(limit),
+                    year: Number(year)
+                });
+                logAudit(`Asignó nueva cuota a ${company}: ${limit} Ton de ${substance} (AF ${year})`, 'Asignación de Cuota');
+            }
+            showToast(`Cuota guardada para ${company}`);
+            window.renderAll();
+        };
+
+        // Modal Rápido de Empresa
+        window.openQuickCompanyModal = function(defaultMod = '1') {
+            document.getElementById('qc_name').value = '';
+            document.getElementById('qc_mod1').checked = (String(defaultMod) === '1');
+            document.getElementById('qc_mod2').checked = (String(defaultMod) === '2');
+            document.getElementById('qc_mod3').checked = (String(defaultMod) === '3');
+            window.tempSelectedSubstances.qc.clear();
+            renderDynamicSubstancePicker('qc');
+            document.getElementById('quick-company-modal').classList.remove('hidden');
+        };
+
+        window.closeQuickCompanyModal = function() {
+            document.getElementById('quick-company-modal').classList.add('hidden');
+        };
+
+        window.handleQuickCompanySubmit = function(e) {
+            e.preventDefault();
+            const name = document.getElementById('qc_name').value.trim();
+            const mods = [];
+            if (document.getElementById('qc_mod1').checked) mods.push('1');
+            if (document.getElementById('qc_mod2').checked) mods.push('2');
+            if (document.getElementById('qc_mod3').checked) mods.push('3');
+            if (mods.length === 0) {
+                customAlert('Atención', 'Seleccione al menos un módulo.');
+                return;
+            }
+            const subs = Array.from(window.tempSelectedSubstances.qc);
+            window.saveCompanyToDB(name, mods, subs);
+            closeQuickCompanyModal();
+
+            // Si el modal de importación está abierto, actualizar su selector y seleccionar la nueva empresa
+            if (!document.getElementById('import-modal').classList.contains('hidden')) {
+                const mod = document.getElementById('modal_current_module').value;
+                openModuleImportModal(mod);
+                document.getElementById('modal_company').value = name;
+                onOrderDateOrCompanyChange();
+            }
+        };
+
+        // =========================================================================
+        // 10. MODAL DE REGISTRO DE IMPORTACIÓN ESPECÍFICO POR MÓDULO
+        // =========================================================================
+        window.openContextImportModal = function() {
+            const tab = window.appState.activeTab;
+            if (tab === 'mod2') openModuleImportModal('2');
+            else if (tab === 'mod3') openModuleImportModal('3');
+            else openModuleImportModal('1');
+        };
+
+        window.openModuleImportModal = function(modNum) {
+            const mod = String(modNum);
+            document.getElementById('modal_current_module').value = mod;
+            document.getElementById('fields-mod1').classList.toggle('hidden', mod !== '1');
+            document.getElementById('fields-mod2').classList.toggle('hidden', mod !== '2');
+            document.getElementById('fields-mod3').classList.toggle('hidden', mod !== '3');
+
+            const titleEl = document.getElementById('modal-module-title');
+            const qtyLabel = document.getElementById('modal_qty_label');
+            const qtyInput = document.getElementById('modal_qty');
+
+            if (mod === '1') {
+                titleEl.innerText = 'Registrar Importación — Módulo 1 (Regulados)';
+                qtyLabel.innerHTML = 'Cantidad a Importar (Toneladas) <span class="text-red-500">*</span>';
+                qtyInput.step = '0.01';
+            } else if (mod === '2') {
+                titleEl.innerText = 'Registrar Importación — Módulo 2 (No Regulados)';
+                qtyLabel.innerHTML = 'Cantidad a Importar (Toneladas) <span class="text-red-500">*</span>';
+                qtyInput.step = '0.01';
+            } else {
+                titleEl.innerText = 'Registrar Importación — Módulo 3 (Equipos / Unidades)';
+                qtyLabel.innerHTML = 'Cantidad de Aparatos (Unidades) <span class="text-red-500">*</span>';
+                qtyInput.step = '1';
+            }
+
+            const fy = getActiveFiscalYear();
+            document.getElementById('modal_order_date').value = `${fy}-06-15`;
+            document.getElementById('modal_arrival_date').value = `${fy}-06-30`;
+            document.getElementById('modal_qty').value = '';
+
+            // Filtrar empresas que pertenecen a este módulo
+            const compSel = document.getElementById('modal_company');
+            const modCompanies = window.appState.companies.filter(c => !Array.isArray(c.modules) || c.modules.includes(mod));
+            compSel.innerHTML = modCompanies.length > 0
+                ? modCompanies.map(c => `<option value="${c.name}">${c.name}</option>`).join('')
+                : `<option value="" disabled selected>Agregue una empresa al Módulo ${mod}...</option>`;
+
+            onOrderDateOrCompanyChange();
+            document.getElementById('import-modal').classList.remove('hidden');
+        };
+
+        window.closeModal = function() {
+            document.getElementById('import-modal').classList.add('hidden');
+        };
+
+        window.onOrderDateOrCompanyChange = function() {
+            const mod = document.getElementById('modal_current_module').value;
+            const orderDate = document.getElementById('modal_order_date').value;
+            const compName = document.getElementById('modal_company').value;
+            const computedFY = calculateFiscalYear(orderDate);
+
+            const badge = document.getElementById('modal_computed_fy_badge');
+            if (badge) badge.innerText = `Contabiliza en AF ${computedFY}`;
+
+            const compObj = window.appState.companies.find(c => c.name === compName);
+
+            if (mod === '1') {
+                const sel1 = document.getElementById('modal_type_select_mod1');
+                const quotas = window.appState.quotas.filter(q => q.company === compName && Number(q.year) === computedFY);
+                if (quotas.length === 0) {
+                    sel1.innerHTML = `<option value="" disabled selected>Sin cuota asignada en AF ${computedFY}</option>`;
+                    document.getElementById('modal_tariff').value = '';
+                    document.getElementById('mod1_quota_available_text').innerText = 'Asigne primero una cuota a esta empresa en Asignación de Cuota o en el Balance del Módulo 1.';
+                } else {
+                    sel1.innerHTML = quotas.map(q => `<option value="${q.substance}">${q.substance} (Cuota: ${q.limit} Ton)</option>`).join('');
+                    autoFillTariffAndDetails('1');
+                }
+            } else if (mod === '2') {
+                const sel2 = document.getElementById('modal_type_select_mod2');
+                let subs2 = window.appState.substances.filter(s => String(s.module) === '2');
+                if (compObj && Array.isArray(compObj.allowedSubstances) && compObj.allowedSubstances.length > 0) {
+                    const filtered = subs2.filter(s => compObj.allowedSubstances.includes(s.name));
+                    if (filtered.length > 0) subs2 = filtered;
+                }
+                sel2.innerHTML = subs2.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+                autoFillTariffAndDetails('2');
+            } else if (mod === '3') {
+                const sel3 = document.getElementById('modal_type_select_mod3');
+                let subs3 = window.appState.substances.filter(s => String(s.module) === '3');
+                if (compObj && Array.isArray(compObj.allowedSubstances) && compObj.allowedSubstances.length > 0) {
+                    const filtered = subs3.filter(s => compObj.allowedSubstances.includes(s.name));
+                    if (filtered.length > 0) subs3 = filtered;
+                }
+                sel3.innerHTML = subs3.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+                autoFillTariffAndDetails('3');
+            }
+        };
+
+        window.autoFillTariffAndDetails = function(mod) {
+            const selectEl = document.getElementById(`modal_type_select_mod${mod}`);
+            if (!selectEl || !selectEl.value) return;
+            const subObj = window.appState.substances.find(s => s.name === selectEl.value && String(s.module) === String(mod));
+            document.getElementById('modal_tariff').value = subObj ? subObj.tariff : '';
+
+            if (mod === '1') {
+                const compName = document.getElementById('modal_company').value;
+                const fy = calculateFiscalYear(document.getElementById('modal_order_date').value);
+                const qObj = window.appState.quotas.find(q => q.company === compName && q.substance === selectEl.value && Number(q.year) === fy);
+                const used = window.appState.imports
+                    .filter(i => i.module === '1' && i.company === compName && i.type === selectEl.value && Number(i.fiscalYear) === fy)
+                    .reduce((a, b) => a + parseFloat(b.qty || 0), 0);
+                const rem = (qObj ? parseFloat(qObj.limit) : 0) - used;
+                document.getElementById('mod1_quota_available_text').innerText = `Saldo disponible antes de esta orden: ${rem.toFixed(2)} Ton`;
+            } else if (mod === '3' && subObj && subObj.refrigerant) {
+                document.getElementById('modal_contained_gas').value = subObj.refrigerant;
+            }
+        };
+
+        window.handleImportSubmit = function(e) {
+            e.preventDefault();
+            const mod = document.getElementById('modal_current_module').value;
+            const company = document.getElementById('modal_company').value;
+            const orderDate = document.getElementById('modal_order_date').value;
+            const arrivalDate = document.getElementById('modal_arrival_date').value;
+            const qty = parseFloat(document.getElementById('modal_qty').value);
+            const tariff = document.getElementById('modal_tariff').value;
+            const fiscalYear = calculateFiscalYear(orderDate);
+
+            const selectEl = document.getElementById(`modal_type_select_mod${mod}`);
+            const substanceOrType = selectEl ? selectEl.value : '';
+            if (!company || !substanceOrType) {
+                customAlert('Datos incompletos', 'Seleccione una empresa y una sustancia/equipo válido.');
+                return;
+            }
+
+            // Asegurar que el año fiscal exista en la lista
+            if (!window.appState.fiscalYears.some(y => Number(y.year) === fiscalYear)) {
+                window.appState.fiscalYears.push({ id: 'fy_' + Date.now(), year: fiscalYear });
+            }
+
+            const trackingNumber = generateTrackingFolio(fiscalYear, mod);
+            const authCode = generateAuthHash();
+            const roleSel = document.getElementById('user-role-selector');
+            const registeredBy = roleSel ? roleSel.value.replace('COMPANY_VIEW:', 'Empresa: ') : 'Admin 1 (Sistema)';
+
+            const newImp = {
+                id: 'imp_' + Date.now(),
+                module: mod,
+                company,
+                type: substanceOrType,
+                tariff,
+                qty: mod === '3' ? parseInt(qty, 10) : qty,
+                orderDate,
+                arrivalDate,
+                fiscalYear,
+                trackingNumber,
+                authCode,
+                registeredBy,
+                registeredAt: new Date().toISOString(),
+                deliveredToAdmin: true,
+                deliveredToCompany: true,
+                productDescription: mod === '3' ? document.getElementById('modal_product_desc').value : '',
+                contained: mod === '3' ? document.getElementById('modal_contained_gas').value : '',
+                regStatus: mod === '3' ? document.getElementById('modal_reg_status').value : ''
+            };
+
+            window.appState.imports.unshift(newImp);
+            logAudit(`Registró importación [${trackingNumber}] en Módulo ${mod}: ${newImp.qty} ${mod === '3' ? 'Unidades' : 'Ton'} de ${substanceOrType} para ${company} (AF ${fiscalYear})`, `Módulo ${mod}`);
+
+            closeModal();
+            document.getElementById('global-fiscal-year').value = fiscalYear;
+            window.renderAll();
+            openReceiptById(newImp.id, 'both');
+        };
+
+        // =========================================================================
+        // 11. EDICIÓN Y ELIMINACIÓN (CUOTAS, EMPRESAS, SUSTANCIAS, IMPORTACIONES)
+        // =========================================================================
+        window.openEditQuotaModal = function(quotaId) {
+            const q = window.appState.quotas.find(x => x.id === quotaId);
+            if (!q) return;
+            document.getElementById('edit-modal-id').value = q.id;
+            document.getElementById('edit-modal-type').value = 'quota';
+            document.getElementById('edit-modal-title').innerText = `Editar Cuota: ${q.company} (${q.substance})`;
+            document.getElementById('edit-modal-name-container').classList.add('hidden');
+            document.getElementById('edit-modal-company-extra').classList.add('hidden');
+            document.getElementById('edit-modal-module-container').classList.add('hidden');
+            document.getElementById('edit-modal-refrigerant-container').classList.add('hidden');
+            document.getElementById('edit-modal-date-container').classList.add('hidden');
+
+            document.getElementById('edit-modal-limit-container').classList.remove('hidden');
+            document.getElementById('edit-modal-limit-label').innerText = `Límite Anual Autorizado en Toneladas (AF ${q.year})`;
+            document.getElementById('edit-modal-limit').value = q.limit;
+
+            document.getElementById('edit-modal').classList.remove('hidden');
+        };
+
+        window.openEditCompanyModal = function(compId) {
+            const c = window.appState.companies.find(x => x.id === compId);
+            if (!c) return;
+            document.getElementById('edit-modal-id').value = c.id;
+            document.getElementById('edit-modal-type').value = 'company';
+            document.getElementById('edit-modal-title').innerText = `Editar Empresa: ${c.name}`;
+
+            document.getElementById('edit-modal-name-container').classList.remove('hidden');
+            document.getElementById('edit-modal-name-label').innerText = 'Nombre de la Empresa';
+            document.getElementById('edit-modal-input').value = c.name;
+
+            document.getElementById('edit-modal-company-extra').classList.remove('hidden');
+            document.getElementById('edit-comp-mod1').checked = (c.modules || []).includes('1');
+            document.getElementById('edit-comp-mod2').checked = (c.modules || []).includes('2');
+            document.getElementById('edit-comp-mod3').checked = (c.modules || []).includes('3');
+
+            window.tempSelectedSubstances.edit = new Set(c.allowedSubstances || []);
+            renderDynamicSubstancePicker('edit');
+
+            document.getElementById('edit-modal-module-container').classList.add('hidden');
+            document.getElementById('edit-modal-refrigerant-container').classList.add('hidden');
+            document.getElementById('edit-modal-limit-container').classList.add('hidden');
+            document.getElementById('edit-modal-date-container').classList.add('hidden');
+
+            document.getElementById('edit-modal').classList.remove('hidden');
+        };
+
+        window.openEditSubstanceModal = function(subId) {
+            const s = window.appState.substances.find(x => x.id === subId);
+            if (!s) return;
+            document.getElementById('edit-modal-id').value = s.id;
+            document.getElementById('edit-modal-type').value = 'substance';
+            document.getElementById('edit-modal-title').innerText = 'Editar Sustancia / Equipo';
+
+            document.getElementById('edit-modal-name-container').classList.remove('hidden');
+            document.getElementById('edit-modal-name-label').innerText = 'Nombre de Sustancia / Equipo';
+            document.getElementById('edit-modal-input').value = s.name;
+
+            document.getElementById('edit-modal-company-extra').classList.add('hidden');
+            document.getElementById('edit-modal-module-container').classList.remove('hidden');
+            document.getElementById('edit-modal-module').value = String(s.module);
+            document.getElementById('edit-modal-tariff').value = s.tariff || '';
+
+            document.getElementById('edit-modal-refrigerant').value = s.refrigerant || '';
+            toggleEditRefrigerantField();
+
+            document.getElementById('edit-modal-limit-container').classList.add('hidden');
+            document.getElementById('edit-modal-date-container').classList.add('hidden');
+            document.getElementById('edit-modal').classList.remove('hidden');
+        };
+
+        window.toggleEditRefrigerantField = function() {
+            const mod = document.getElementById('edit-modal-module').value;
+            document.getElementById('edit-modal-refrigerant-container').classList.toggle('hidden', mod !== '3');
+        };
+
+        window.openEditYearModal = function(yearId) {
+            const y = window.appState.fiscalYears.find(x => x.id === yearId);
+            if (!y) return;
+            document.getElementById('edit-modal-id').value = y.id;
+            document.getElementById('edit-modal-type').value = 'year';
+            document.getElementById('edit-modal-title').innerText = 'Editar Año Fiscal';
+
+            document.getElementById('edit-modal-name-container').classList.remove('hidden');
+            document.getElementById('edit-modal-name-label').innerText = 'Año Fiscal';
+            document.getElementById('edit-modal-input').value = y.year;
+
+            document.getElementById('edit-modal-company-extra').classList.add('hidden');
+            document.getElementById('edit-modal-module-container').classList.add('hidden');
+            document.getElementById('edit-modal-refrigerant-container').classList.add('hidden');
+            document.getElementById('edit-modal-limit-container').classList.add('hidden');
+            document.getElementById('edit-modal-date-container').classList.add('hidden');
+            document.getElementById('edit-modal').classList.remove('hidden');
+        };
+
+        window.openEditImportModal = function(impId) {
+            const imp = window.appState.imports.find(x => x.id === impId);
+            if (!imp) return;
+            document.getElementById('edit-modal-id').value = imp.id;
+            document.getElementById('edit-modal-type').value = 'import';
+            document.getElementById('edit-modal-title').innerText = `Editar Importación [${imp.trackingNumber}]`;
+
+            document.getElementById('edit-modal-name-container').classList.add('hidden');
+            document.getElementById('edit-modal-company-extra').classList.add('hidden');
+            document.getElementById('edit-modal-module-container').classList.add('hidden');
+            document.getElementById('edit-modal-refrigerant-container').classList.add('hidden');
+
+            document.getElementById('edit-modal-limit-container').classList.remove('hidden');
+            document.getElementById('edit-modal-limit-label').innerText = imp.module === '3' ? 'Cantidad (Unidades)' : 'Cantidad (Toneladas)';
+            document.getElementById('edit-modal-limit').value = imp.qty;
+
+            document.getElementById('edit-modal-date-container').classList.remove('hidden');
+            document.getElementById('edit-modal-date').value = imp.orderDate;
+
+            document.getElementById('edit-modal').classList.remove('hidden');
+        };
+
+        window.closeEditModal = function() {
+            document.getElementById('edit-modal').classList.add('hidden');
+        };
+
+        window.saveEdit = function() {
+            const id = document.getElementById('edit-modal-id').value;
+            const type = document.getElementById('edit-modal-type').value;
+
+            if (type === 'quota') {
+                const q = window.appState.quotas.find(x => x.id === id);
+                if (q) {
+                    q.limit = parseFloat(document.getElementById('edit-modal-limit').value || 0);
+                    logAudit(`Modificó cuota de ${q.company} (${q.substance}) a ${q.limit} Ton`, 'Módulo 1 / Cuotas');
+                    showToast('Cuota actualizada correctamente');
+                }
+            } else if (type === 'company') {
+                const c = window.appState.companies.find(x => x.id === id);
+                if (c) {
+                    const oldName = c.name;
+                    const newName = document.getElementById('edit-modal-input').value.trim();
+                    const mods = [];
+                    if (document.getElementById('edit-comp-mod1').checked) mods.push('1');
+                    if (document.getElementById('edit-comp-mod2').checked) mods.push('2');
+                    if (document.getElementById('edit-comp-mod3').checked) mods.push('3');
+                    if (mods.length === 0) {
+                        customAlert('Atención', 'Seleccione al menos un módulo.');
+                        return;
+                    }
+                    c.name = newName;
+                    c.modules = mods;
+                    c.allowedSubstances = Array.from(window.tempSelectedSubstances.edit);
+
+                    // Propagar cambio de nombre en cuotas e importaciones
+                    if (oldName !== newName) {
+                        window.appState.quotas.forEach(q => { if (q.company === oldName) q.company = newName; });
+                        window.appState.imports.forEach(i => { if (i.company === oldName) i.company = newName; });
+                    }
+                    // Asegurar cuotas base para Módulo 1 si se agregaron sustancias reguladas
+                    const currentFY = getActiveFiscalYear();
+                    if (mods.includes('1')) {
+                        c.allowedSubstances.forEach(subName => {
+                            const sObj = window.appState.substances.find(s => s.name === subName && String(s.module) === '1');
+                            if (sObj && !window.appState.quotas.some(q => q.company === newName && q.substance === subName && Number(q.year) === currentFY)) {
+                                window.appState.quotas.push({
+                                    id: 'q_' + Date.now() + Math.floor(Math.random() * 1000),
+                                    company: newName,
+                                    substance: subName,
+                                    limit: 0,
+                                    year: currentFY
+                                });
+                            }
+                        });
+                    }
+                    logAudit(`Editó empresa "${newName}" (Módulos: ${mods.join(', ')})`, 'Empresas');
+                    showToast('Empresa actualizada');
+                }
+            } else if (type === 'substance') {
+                const s = window.appState.substances.find(x => x.id === id);
+                if (s) {
+                    s.name = document.getElementById('edit-modal-input').value.trim();
+                    s.module = document.getElementById('edit-modal-module').value;
+                    s.tariff = document.getElementById('edit-modal-tariff').value.trim();
+                    s.refrigerant = document.getElementById('edit-modal-refrigerant').value.trim();
+                    logAudit(`Editó sustancia/equipo "${s.name}"`, 'Catálogo');
+                    showToast('Sustancia actualizada');
+                }
+            } else if (type === 'year') {
+                const y = window.appState.fiscalYears.find(x => x.id === id);
+                if (y) {
+                    y.year = parseInt(document.getElementById('edit-modal-input').value, 10);
+                    showToast('Año fiscal actualizado');
+                }
+            } else if (type === 'import') {
+                const imp = window.appState.imports.find(x => x.id === id);
+                if (imp) {
+                    imp.qty = imp.module === '3'
+                        ? parseInt(document.getElementById('edit-modal-limit').value, 10)
+                        : parseFloat(document.getElementById('edit-modal-limit').value);
+                    imp.orderDate = document.getElementById('edit-modal-date').value;
+                    imp.fiscalYear = calculateFiscalYear(imp.orderDate);
+                    logAudit(`Editó movimiento [${imp.trackingNumber}]: cantidad=${imp.qty}, fecha=${imp.orderDate}`, `Módulo ${imp.module}`);
+                    showToast('Movimiento actualizado');
+                }
+            }
+
+            closeEditModal();
+            window.renderAll();
+        };
+
+        window.deleteQuota = function(id) {
+            customConfirm('Eliminar Cuota', '¿Desea eliminar este registro de cuota?', () => {
+                window.appState.quotas = window.appState.quotas.filter(q => q.id !== id);
+                window.renderAll();
+                showToast('Cuota eliminada');
+            });
+        };
+
+        window.deleteCompany = function(id) {
+            const c = window.appState.companies.find(x => x.id === id);
+            if (!c) return;
+            customConfirm('Eliminar Empresa', `¿Desea eliminar a "${c.name}" y sus registros asociados?`, () => {
+                window.appState.companies = window.appState.companies.filter(x => x.id !== id);
+                window.appState.quotas = window.appState.quotas.filter(q => q.company !== c.name);
+                window.appState.imports = window.appState.imports.filter(i => i.company !== c.name);
+                window.renderAll();
+                showToast('Empresa eliminada');
+            });
+        };
+
+        window.deleteSubstance = function(id) {
+            customConfirm('Eliminar Sustancia', '¿Desea eliminar este elemento del catálogo?', () => {
+                window.appState.substances = window.appState.substances.filter(s => s.id !== id);
+                window.renderAll();
+                showToast('Sustancia eliminada');
+            });
+        };
+
+        window.deleteImport = function(id) {
+            customConfirm('Eliminar Importación', '¿Desea eliminar este movimiento de importación?', () => {
+                window.appState.imports = window.appState.imports.filter(i => i.id !== id);
+                window.renderAll();
+                showToast('Movimiento eliminado');
+            });
+        };
+
+        window.clearModuleData = function(modNum) {
+            const m = String(modNum);
+            customConfirm(`Vaciar Módulo ${m}`, `¿Desea dejar en blanco los movimientos del Módulo ${m}?`, () => {
+                window.appState.imports = window.appState.imports.filter(i => String(i.module) !== m);
+                if (m === '1') window.appState.quotas = [];
+                window.renderAll();
+                showToast(`Módulo ${m} vaciado`);
+            });
+        };
+
+        window.clearAllDemoDataToBlank = function() {
+            customConfirm('Dejar Módulos en Blanco', '¿Desea borrar las empresas, cuotas e importaciones de prueba para ingresar únicamente sus datos reales?', () => {
+                window.appState.companies = [];
+                window.appState.quotas = [];
+                window.appState.imports = [];
+                window.renderAll();
+                showToast('Sistema limpio y listo para sus empresas reales');
+            });
+        };
+
+        // =========================================================================
+        // 12. COMPROBANTE DIGITAL BANCARIO CON QR Y ENTREGA DUAL (ADMIN + EMPRESA)
+        // =========================================================================
+        window.openReceiptById = function(impId, mode = 'both') {
+            const imp = window.appState.imports.find(x => x.id === impId);
+            if (!imp) return;
+
+            document.getElementById('rec_tracking_number').innerText = imp.trackingNumber || 'UTOH-2026-M1-000000';
+            document.getElementById('rec_company').innerText = imp.company;
+            document.getElementById('rec_module').innerText = `Módulo ${imp.module} (AF ${imp.fiscalYear})`;
+            document.getElementById('rec_substance').innerText = imp.module === '3' && imp.productDescription
+                ? `${imp.type} - ${imp.productDescription}`
+                : imp.type;
+            document.getElementById('rec_tariff').innerText = imp.tariff || 'S/N';
+            document.getElementById('rec_qty').innerText = `${imp.qty} ${imp.module === '3' ? 'Unidades' : 'Toneladas'}`;
+            document.getElementById('rec_order_date').innerText = `${imp.orderDate} (AF ${imp.fiscalYear})`;
+            document.getElementById('rec_arrival_date').innerText = imp.arrivalDate || 'Pendiente';
+            document.getElementById('rec_user').innerText = imp.registeredBy || 'Admin 1 (Sistema)';
+            document.getElementById('rec_company_recipient').innerText = imp.company;
+            document.getElementById('rec_auth_hash').innerText = imp.authCode || generateAuthHash();
+
+            const qBreakdown = document.getElementById('rec_quota_breakdown');
+            if (String(imp.module) === '1') {
+                qBreakdown.classList.remove('hidden');
+                const qObj = window.appState.quotas.find(q => q.company === imp.company && q.substance === imp.type && Number(q.year) === Number(imp.fiscalYear));
+                const limit = qObj ? parseFloat(qObj.limit) : 0;
+                const used = window.appState.imports
+                    .filter(i => i.module === '1' && i.company === imp.company && i.type === imp.type && Number(i.fiscalYear) === Number(imp.fiscalYear))
+                    .reduce((a, b) => a + parseFloat(b.qty || 0), 0);
+                document.getElementById('rec_quota_limit').innerText = `${limit.toFixed(2)} Ton`;
+                document.getElementById('rec_quota_used').innerText = `${used.toFixed(2)} Ton`;
+                document.getElementById('rec_quota_remaining').innerText = `${(limit - used).toFixed(2)} Ton`;
+            } else {
+                qBreakdown.classList.add('hidden');
+            }
+
+            // Generar Código QR Oficial
+            const qrCanvas = document.getElementById('receipt-qr-canvas');
+            if (qrCanvas && window.QRious) {
+                new QRious({
+                    element: qrCanvas,
+                    value: JSON.stringify({
+                        folio: imp.trackingNumber,
+                        empresa: imp.company,
+                        modulo: imp.module,
+                        sustancia: imp.type,
+                        arancel: imp.tariff,
+                        cantidad: imp.qty,
+                        orden: imp.orderDate,
+                        af: imp.fiscalYear
+                    }),
+                    size: 140,
+                    level: 'M'
+                });
+            }
+
+            switchReceiptCopyMode(mode);
+            document.getElementById('receipt-modal').classList.remove('hidden');
+        };
+
+        window.switchReceiptCopyMode = function(mode) {
+            const adminBox = document.getElementById('rec_seal_admin_box');
+            const compBox = document.getElementById('rec_seal_company_box');
+            const badge = document.getElementById('rec_copy_badge');
+
+            document.getElementById('btn_copy_both').className = mode === 'both' ? 'px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-600 text-white' : 'px-2.5 py-1 rounded-md text-[11px] font-semibold text-gray-700 hover:bg-gray-100';
+            document.getElementById('btn_copy_admin').className = mode === 'admin' ? 'px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-600 text-white' : 'px-2.5 py-1 rounded-md text-[11px] font-semibold text-gray-700 hover:bg-gray-100';
+            document.getElementById('btn_copy_company').className = mode === 'company' ? 'px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-600 text-white' : 'px-2.5 py-1 rounded-md text-[11px] font-semibold text-gray-700 hover:bg-gray-100';
+
+            if (mode === 'admin') {
+                adminBox.classList.remove('hidden');
+                compBox.classList.add('hidden');
+                badge.innerText = 'EJEMPLAR ADMINISTRADOR';
+            } else if (mode === 'company') {
+                adminBox.classList.add('hidden');
+                compBox.classList.remove('hidden');
+                badge.innerText = 'EJEMPLAR EMPRESA IMPORTADORA';
+            } else {
+                adminBox.classList.remove('hidden');
+                compBox.classList.remove('hidden');
+                badge.innerText = 'DOBLE EJEMPLAR OFICIAL';
+            }
+        };
+
+        window.closeReceiptModal = function() {
+            document.getElementById('receipt-modal').classList.add('hidden');
+        };
+
+        window.copyTrackingFolio = function() {
+            const text = document.getElementById('rec_tracking_number').innerText;
+            const tempInput = document.createElement('input');
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            showToast(`Folio copiado: ${text}`);
+        };
+
+        window.openVerifyFolioModal = function() {
+            document.getElementById('verify_folio_input').value = '';
+            document.getElementById('verify_folio_result').innerHTML = '';
+            document.getElementById('verify-folio-modal').classList.remove('hidden');
+        };
+
+        window.closeVerifyFolioModal = function() {
+            document.getElementById('verify-folio-modal').classList.add('hidden');
+        };
+
+        window.verifyTrackingFolio = function() {
+            const val = document.getElementById('verify_folio_input').value.trim().toUpperCase();
+            const resDiv = document.getElementById('verify_folio_result');
+            const found = window.appState.imports.find(i => (i.trackingNumber || '').toUpperCase() === val);
+            if (!found) {
+                resDiv.innerHTML = `<div class="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 font-bold">❌ No se encontró ningún movimiento con el folio "${val}".</div>`;
+            } else {
+                resDiv.innerHTML = `
+                    <div class="p-3.5 bg-emerald-50 border border-emerald-200 rounded-lg text-xs space-y-1">
+                        <div class="font-bold text-emerald-900">✓ FOLIO OFICIAL VÁLIDO (${found.trackingNumber})</div>
+                        <div><b>Empresa:</b> ${found.company}</div>
+                        <div><b>Sustancia/Equipo:</b> ${found.type} (${found.tariff})</div>
+                        <div><b>Cantidad:</b> ${found.qty} ${found.module === '3' ? 'Unidades' : 'Ton'} | <b>AF:</b> ${found.fiscalYear}</div>
+                        <button onclick="closeVerifyFolioModal(); openReceiptById('${found.id}')" class="mt-2 w-full py-1.5 bg-emerald-600 text-white rounded font-bold">Abrir Comprobante Completo</button>
+                    </div>
+                `;
+            }
+        };
+
+        // =========================================================================
+        // 13. IMPORTACIÓN DE BASE DE DATOS REAL (JSON / CSV)
+        // =========================================================================
+        window.openImportDBModal = function() {
+            document.getElementById('import-db-modal').classList.remove('hidden');
+        };
+
+        window.closeImportDBModal = function() {
+            document.getElementById('import-db-modal').classList.add('hidden');
+        };
+
+        window.restoreUTOHCatalog = function() {
+            window.appState.substances = [...window.OFFICIAL_UTOH_SUBSTANCES];
+            window.renderAll();
+            closeImportDBModal();
+            showToast('Catálogo oficial UTOH restaurado');
+        };
+
+        window.processRealDatabaseUpload = function() {
+            const fileInput = document.getElementById('db_file_input');
+            if (!fileInput.files || fileInput.files.length === 0) {
+                customAlert('Atención', 'Seleccione un archivo .json o .csv primero.');
+                return;
+            }
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    if (file.name.endsWith('.json')) {
+                        const data = JSON.parse(evt.target.result);
+                        if (Array.isArray(data.companies)) window.appState.companies = data.companies;
+                        if (Array.isArray(data.quotas)) window.appState.quotas = data.quotas;
+                        if (Array.isArray(data.imports)) window.appState.imports = data.imports;
+                    }
+                    window.renderAll();
+                    closeImportDBModal();
+                    showToast('Base de datos cargada con éxito');
+                } catch (err) {
+                    customAlert('Error de formato', 'El archivo no pudo procesarse. Verifique que sea JSON válido.');
+                }
+            };
+            reader.readAsText(file);
+        };
+
+        // Inicializar al cargar la ventana
+        window.addEventListener('DOMContentLoaded', () => {
+            window.renderAll();
+        });
+    </script>
+</body>
+</html>
