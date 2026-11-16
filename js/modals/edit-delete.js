@@ -5,7 +5,7 @@
 // =========================================================================
 // Oculta los campos extra del modal de edición (se muestran solo donde aplican).
 window.hideEditExtras = function() {
-    ['edit-modal-limitco2-container', 'edit-modal-gwp-container'].forEach(id => document.getElementById(id).classList.add('hidden'));
+    ['edit-modal-limitco2-container', 'edit-modal-gwp-container', 'edit-modal-rtn-container'].forEach(id => document.getElementById(id).classList.add('hidden'));
 };
 
 window.openEditQuotaModal = function(quotaId) {
@@ -41,6 +41,8 @@ window.openEditCompanyModal = function(compId) {
     document.getElementById('edit-modal-name-container').classList.remove('hidden');
     document.getElementById('edit-modal-name-label').innerText = 'Nombre de la Empresa';
     document.getElementById('edit-modal-input').value = c.name;
+    document.getElementById('edit-modal-rtn-container').classList.remove('hidden');
+    document.getElementById('edit-modal-rtn').value = c.rtn || '';
 
     document.getElementById('edit-modal-company-extra').classList.remove('hidden');
     document.getElementById('edit-comp-mod1').checked = (c.modules || []).includes('1');
@@ -159,11 +161,14 @@ window.saveEdit = function() {
             if (document.getElementById('edit-comp-mod1').checked) mods.push('1');
             if (document.getElementById('edit-comp-mod2').checked) mods.push('2');
             if (document.getElementById('edit-comp-mod3').checked) mods.push('3');
-            if (mods.length === 0) {
-                customAlert('Atención', 'Seleccione al menos un módulo.');
+            const newRTN = document.getElementById('edit-modal-rtn').value.trim();
+            const error = validateCompanyData({ name: newName, rtn: newRTN, modules: mods, excludeId: c.id });
+            if (error) {
+                customAlert('No se pudo guardar la empresa', error);
                 return;
             }
             c.name = newName;
+            c.rtn = newRTN;
             c.modules = mods;
             c.allowedSubstances = Array.from(window.tempSelectedSubstances.edit);
 
@@ -237,10 +242,16 @@ window.deleteQuota = function(id) {
 window.deleteCompany = function(id) {
     const c = window.appState.companies.find(x => x.id === id);
     if (!c) return;
-    customConfirm('Eliminar Empresa', `¿Desea eliminar a "${c.name}" y sus registros asociados?`, () => {
+    const nQuotas = window.appState.quotas.filter(q => q.company === c.name).length;
+    const nImports = window.appState.imports.filter(i => i.company === c.name).length;
+    const detail = (nQuotas || nImports)
+        ? ` Se eliminarán también ${nQuotas} cuota(s) y ${nImports} importación(es) asociadas.`
+        : '';
+    customConfirm('Dar de baja la empresa', `¿Desea eliminar a "${c.name}"?${detail}`, () => {
         window.appState.companies = window.appState.companies.filter(x => x.id !== id);
         window.appState.quotas = window.appState.quotas.filter(q => q.company !== c.name);
         window.appState.imports = window.appState.imports.filter(i => i.company !== c.name);
+        logAudit(`Dio de baja la empresa "${c.name}" (RTN ${c.rtn || 'sin RTN'}), con ${nQuotas} cuota(s) y ${nImports} importación(es)`, 'Empresas');
         window.renderAll();
         showToast('Empresa eliminada');
     });

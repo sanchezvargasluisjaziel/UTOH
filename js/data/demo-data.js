@@ -4,18 +4,21 @@ window.DEMO_COMPANIES = [
     {
         id: "c1",
         name: "FrioMax S.A.",
+        rtn: "0801-1990-100001",
         modules: ["1", "2"],
         allowedSubstances: ["R-22", "R-410A", "R-134a", "R-600a (Isobutano)"]
     },
     {
         id: "c2",
         name: "EcoGas Honduras",
+        rtn: "0501-1995-200002",
         modules: ["2"],
         allowedSubstances: ["R-600a (Isobutano)", "R-290 (Propano licuado)", "R-1234yf"]
     },
     {
         id: "c3",
         name: "ClimaCorp Equipos S.A.",
+        rtn: "0801-2001-300003",
         modules: ["3"],
         allowedSubstances: [
             "Equipos de aire acondicionado tipo Split System",

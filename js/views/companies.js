@@ -9,7 +9,7 @@ function renderCompanies() {
         <div class="mb-6">
             <span class="text-xs font-bold uppercase tracking-wider text-indigo-600">Configuración de Padrón</span>
             <h2 class="text-2xl font-bold text-gray-800">Catálogo de Empresas Importadoras</h2>
-            <p class="text-sm text-gray-500">Agregue o edite empresas y seleccione en qué módulos operan. Los módulos se actualizarán automáticamente.</p>
+            <p class="text-sm text-gray-500">Dé de alta o de baja a las empresas importadoras (nombre, RTN y módulos). Las cuotas se asignan aparte, en Asignación de Cuota.</p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -20,6 +20,11 @@ function renderCompanies() {
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1">Nombre de la Empresa <span class="text-red-500">*</span></label>
                         <input type="text" id="cat_comp_name" required class="w-full p-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Ej. Refrigeración Industrial S.A.">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">RTN / Identificador Fiscal <span class="text-red-500">*</span></label>
+                        <input type="text" id="cat_comp_rtn" required maxlength="30" class="w-full p-2.5 border border-gray-300 rounded-lg text-sm font-mono outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Ej. 0801-1999-123456">
                     </div>
 
                     <div>
@@ -70,6 +75,7 @@ function renderCompanies() {
                         <thead>
                             <tr class="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500">
                                 <th class="p-3.5 font-semibold">Empresa</th>
+                                <th class="p-3.5 font-semibold">RTN</th>
                                 <th class="p-3.5 font-semibold">Módulos</th>
                                 <th class="p-3.5 font-semibold">Sustancias / Equipos Autorizados</th>
                                 <th class="p-3.5 font-semibold text-right">Acciones</th>
@@ -79,7 +85,7 @@ function renderCompanies() {
     `;
 
     if (companies.length === 0) {
-        html += `<tr><td colspan="4" class="p-8 text-center text-gray-400">No hay empresas registradas.</td></tr>`;
+        html += `<tr><td colspan="5" class="p-8 text-center text-gray-400">No hay empresas registradas.</td></tr>`;
     } else {
         companies.forEach(c => {
             const mods = (c.modules || ['1']).map(m => {
@@ -93,7 +99,8 @@ function renderCompanies() {
 
             html += `
                 <tr class="hover:bg-gray-50">
-                    <td class="p-3.5 font-bold text-gray-900">${c.name}</td>
+                    <td class="p-3.5 font-bold text-gray-900">${escapeHtml(c.name)}</td>
+                    <td class="p-3.5 font-mono text-xs text-gray-600 whitespace-nowrap">${c.rtn ? escapeHtml(c.rtn) : '<span class="text-amber-600 font-sans font-semibold">Sin RTN</span>'}</td>
                     <td class="p-3.5 whitespace-nowrap">${mods}</td>
                     <td class="p-3.5 text-xs text-gray-600 max-w-xs">
                         ${subs.length > 0 ? `${previewSubs}${extraCount}` : '<span class="text-gray-400">Todas las del módulo</span>'}
@@ -208,17 +215,15 @@ window.filterDynamicSubstancePicker = function(prefix) {
 function handleAddCompanyFromCatalog(e) {
     e.preventDefault();
     const name = document.getElementById('cat_comp_name').value.trim();
+    const rtn = document.getElementById('cat_comp_rtn').value.trim();
     const modules = [];
     if (document.getElementById('cat_mod1').checked) modules.push('1');
     if (document.getElementById('cat_mod2').checked) modules.push('2');
     if (document.getElementById('cat_mod3').checked) modules.push('3');
-    if (modules.length === 0) {
-        customAlert('Atención', 'Seleccione al menos un módulo (1, 2 o 3).');
-        return;
-    }
     const allowedSubstances = Array.from(window.tempSelectedSubstances.cat);
-    window.saveCompanyToDB(name, modules, allowedSubstances);
+    if (!window.saveCompanyToDB(name, rtn, modules, allowedSubstances)) return;
     document.getElementById('cat_comp_name').value = '';
+    document.getElementById('cat_comp_rtn').value = '';
     window.tempSelectedSubstances.cat.clear();
     renderDynamicSubstancePicker('cat');
 }

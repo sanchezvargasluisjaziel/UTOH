@@ -295,6 +295,10 @@
                     <input type="text" id="qc_name" required class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm" placeholder="Ej. Importadora de Climas S.A.">
                 </div>
                 <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">RTN / Identificador Fiscal <span class="text-red-500">*</span></label>
+                    <input type="text" id="qc_rtn" required maxlength="30" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-mono" placeholder="Ej. 0801-1999-123456">
+                </div>
+                <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1.5">Módulos en los que opera <span class="text-red-500">*</span></label>
                     <div class="grid grid-cols-3 gap-2 bg-gray-50 p-2.5 rounded-lg border border-gray-200 text-xs">
                         <label class="flex items-center space-x-1.5 cursor-pointer">
@@ -352,6 +356,11 @@
                 </div>
 
                 <!-- Campos compactos para editar Empresa -->
+                <div id="edit-modal-rtn-container" class="hidden">
+                    <label class="block text-xs font-bold text-gray-700 mb-1">RTN / Identificador Fiscal <span class="text-red-500">*</span></label>
+                    <input type="text" id="edit-modal-rtn" maxlength="30" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-mono">
+                </div>
+
                 <div id="edit-modal-company-extra" class="hidden space-y-3">
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1">Módulos Autorizados</label>
@@ -653,6 +662,7 @@
     <script src="js/core/state.js"></script>
     <script src="js/core/helpers.js"></script>
     <script src="js/core/tco2.js"></script>
+    <script src="js/core/validators.js"></script>
     <script src="js/core/ui.js"></script>
     <script src="js/services/db.js"></script>
     <script src="js/views/quotas.js"></script>

@@ -3,47 +3,28 @@
 // =========================================================================
 // 9. GUARDADO DE EMPRESAS, CUOTAS E IMPORTACIONES (SINCRONIZACIÓN TOTAL)
 // =========================================================================
-window.saveCompanyToDB = function(name, modules, allowedSubstances = []) {
-    const cleanName = (name || '').trim();
-    if (!cleanName) return;
-
-    const existing = window.appState.companies.find(c => c.name.toLowerCase() === cleanName.toLowerCase());
-    if (existing) {
-        existing.modules = modules;
-        existing.allowedSubstances = allowedSubstances;
-    } else {
-        window.appState.companies.push({
-            id: 'comp_' + Date.now(),
-            name: cleanName,
-            modules: modules,
-            allowedSubstances: allowedSubstances
-        });
+// Alta de empresa (sin asignar cuotas: eso se hace en Asignación de Cuota).
+// Devuelve true si se guardó; si los datos no son válidos muestra el motivo y devuelve false.
+window.saveCompanyToDB = function(name, rtn, modules, allowedSubstances = []) {
+    const error = validateCompanyData({ name, rtn, modules });
+    if (error) {
+        customAlert('No se pudo registrar la empresa', error);
+        return false;
     }
-
-    // Si la empresa opera en el Módulo 1 y se seleccionaron sustancias reguladas, asegurar que aparezca en el Balance del Módulo 1
-    const currentFY = getActiveFiscalYear();
-    if (modules.includes('1') && allowedSubstances.length > 0) {
-        allowedSubstances.forEach(subName => {
-            const subObj = window.appState.substances.find(s => s.name === subName && String(s.module) === '1');
-            if (subObj) {
-                const hasQuota = window.appState.quotas.some(q => q.company === cleanName && q.substance === subName && Number(q.year) === currentFY);
-                if (!hasQuota) {
-                    window.appState.quotas.push({
-                        id: 'q_' + Date.now() + Math.floor(Math.random() * 1000),
-                        company: cleanName,
-                        substance: subName,
-                        limit: 0,
-                        year: currentFY
-                    });
-                }
-            }
-        });
-    }
-
+    const cleanName = name.trim();
+    const cleanRTN = rtn.trim();
+    window.appState.companies.push({
+        id: 'comp_' + Date.now(),
+        name: cleanName,
+        rtn: cleanRTN,
+        modules: modules,
+        allowedSubstances: allowedSubstances
+    });
     window.appState.selectedPortalCompany = cleanName;
-    logAudit(`Registró/actualizó empresa "${cleanName}" en Módulos [${modules.join(', ')}]`, 'Empresas');
-    showToast(`Empresa "${cleanName}" actualizada en los módulos`);
+    logAudit(`Dio de alta la empresa "${cleanName}" (RTN ${cleanRTN}) en Módulos [${modules.join(', ')}]`, 'Empresas');
+    showToast(`Empresa "${cleanName}" registrada`);
     window.renderAll();
+    return true;
 };
 
 window.saveQuotaToDB = function(company, substance, limit, year, limitCO2 = null) {
