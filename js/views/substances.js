@@ -62,10 +62,10 @@ function renderSubstances() {
                         ${subs.map(s => `
                             <tr class="hover:bg-gray-50">
                                 <td class="p-3.5 font-bold text-gray-900">
-                                    ${s.name}
-                                    ${s.module === '3' && s.refrigerant ? `<span class="block text-xs text-purple-600 font-normal">Refrigerante: ${s.refrigerant}</span>` : ''}
+                                    ${escapeHtml(s.name)}
+                                    ${s.module === '3' && s.refrigerant ? `<span class="block text-xs text-purple-600 font-normal">Refrigerante: ${escapeHtml(s.refrigerant)}</span>` : ''}
                                 </td>
-                                <td class="p-3.5 font-mono text-xs text-gray-700">${s.tariff}</td>
+                                <td class="p-3.5 font-mono text-xs text-gray-700">${escapeHtml(s.tariff)}</td>
                                 <td class="p-3.5 text-xs font-bold">Módulo ${s.module}</td>
                                 <td class="p-3.5 text-right text-xs">${String(s.module) === '3' ? '<span class="text-gray-400">No aplica</span>' : (getGwp(s.name) !== null ? `<b>${fmtNum(getGwp(s.name))}</b>` : '<span class="px-2 py-0.5 rounded bg-amber-50 text-amber-700 font-semibold">Sin factor</span>')}</td>
                                 <td class="p-3.5 text-right whitespace-nowrap">
@@ -89,13 +89,19 @@ function handleAddSubstance(e) {
     const module = document.getElementById('sub_module').value;
     const refrigerant = document.getElementById('sub_refrigerant')?.value.trim() || '';
     const gwpRaw = document.getElementById('sub_gwp')?.value || '';
+    const gwp = (module === '3' || gwpRaw === '') ? null : parseFloat(gwpRaw);
+    const error = validateSubstanceData({ name, tariff, module, gwp, refrigerant });
+    if (error) {
+        customAlert('No se pudo agregar al catálogo', error);
+        return;
+    }
     window.appState.substances.unshift({
         id: 'sub_' + Date.now(),
         name,
         tariff,
         module,
         refrigerant,
-        gwp: (module === '3' || gwpRaw === '') ? null : parseFloat(gwpRaw)
+        gwp
     });
     logAudit(`Agregó sustancia/equipo ${name} (${tariff}) al Módulo ${module}`, 'Catálogo');
     showToast(`Sustancia agregada al Módulo ${module}`);

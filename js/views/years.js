@@ -44,8 +44,9 @@ function renderYears() {
 function handleAddYear(e) {
     e.preventDefault();
     const yr = parseInt(document.getElementById('new_fy_input').value, 10);
-    if (window.appState.fiscalYears.some(x => Number(x.year) === yr)) {
-        customAlert('Aviso', `El Año Fiscal ${yr} ya existe.`);
+    const error = validateYear(yr);
+    if (error) {
+        customAlert('No se pudo agregar el año fiscal', error);
         return;
     }
     window.appState.fiscalYears.push({ id: 'fy_' + Date.now(), year: yr });

@@ -66,7 +66,7 @@ function renderModule3(activeImports) {
 
             html += `
                 <tr class="hover:bg-gray-50">
-                    <td class="p-3.5 font-bold text-gray-900">${c.name}</td>
+                    <td class="p-3.5 font-bold text-gray-900">${escapeHtml(c.name)}</td>
                     <td class="p-3.5 text-xs text-gray-600">${mod3Subs.length > 0 ? mod3Subs.join(', ') : 'Todos los equipos del catálogo Módulo 3'}</td>
                     <td class="p-3.5 text-right font-extrabold text-purple-700">${totalUnits.toLocaleString('en-US')} Unidades</td>
                     <td class="p-3.5 text-right whitespace-nowrap">
@@ -114,23 +114,23 @@ function renderModule3(activeImports) {
                 <tr class="hover:bg-gray-50">
                     <td class="p-3.5">
                         <button onclick="openReceiptById('${imp.id}')" class="font-mono text-xs font-bold text-purple-700 hover:underline bg-purple-50 px-2 py-1 rounded">
-                            ${imp.trackingNumber || 'VER-QR'}
+                            ${escapeHtml(imp.trackingNumber || 'VER-QR')}
                         </button>
                     </td>
                     <td class="p-3.5 text-xs">
-                        <div class="font-bold text-gray-800">Orden: ${imp.orderDate}</div>
-                        <div class="text-gray-400">Llegada: ${imp.arrivalDate || 'Pendiente'}</div>
+                        <div class="font-bold text-gray-800">Orden: ${escapeHtml(imp.orderDate)}</div>
+                        <div class="text-gray-400">Llegada: ${escapeHtml(imp.arrivalDate || 'Pendiente')}</div>
                     </td>
-                    <td class="p-3.5 font-bold text-gray-900">${imp.company}</td>
+                    <td class="p-3.5 font-bold text-gray-900">${escapeHtml(imp.company)}</td>
                     <td class="p-3.5">
-                        <div class="font-semibold text-gray-800 text-xs">${imp.type}</div>
-                        <div class="text-xs text-purple-700">${imp.productDescription || ''}</div>
+                        <div class="font-semibold text-gray-800 text-xs">${escapeHtml(imp.type)}</div>
+                        <div class="text-xs text-purple-700">${escapeHtml(imp.productDescription || '')}</div>
                     </td>
                     <td class="p-3.5 text-xs">
-                        <span class="font-bold">${imp.contained || 'N/A'}</span>
-                        <span class="block text-[10px] text-gray-500">${imp.regStatus || ''}</span>
+                        <span class="font-bold">${escapeHtml(imp.contained || 'N/A')}</span>
+                        <span class="block text-[10px] text-gray-500">${escapeHtml(imp.regStatus || '')}</span>
                     </td>
-                    <td class="p-3.5 font-mono text-xs text-gray-600">${imp.tariff}</td>
+                    <td class="p-3.5 font-mono text-xs text-gray-600">${escapeHtml(imp.tariff)}</td>
                     <td class="p-3.5 text-right font-bold text-gray-900">${ parseInt(imp.qty, 10).toLocaleString('en-US') } Unid.</td>
                     <td class="p-3.5 text-right whitespace-nowrap">
                         <button onclick="openReceiptById('${imp.id}')" class="text-emerald-600 hover:text-emerald-800 font-bold text-xs mr-2">Recibo/QR</button>

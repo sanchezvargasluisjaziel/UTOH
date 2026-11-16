@@ -36,14 +36,14 @@ function renderQuotas() {
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Empresa Importadora (Módulo 1)</label>
                     <select id="quota_company" required onchange="updateQuotaSubstanceSelect()" class="w-full p-2.5 border border-gray-300 rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-indigo-500">
                         <option value="" disabled selected>Seleccione empresa...</option>
-                        ${mod1Companies.map(c => `<option value="${c.name}">${c.name}</option>`).join('')}
+                        ${mod1Companies.map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('')}
                     </select>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Sustancia Regulada</label>
                     <select id="quota_substance" required class="w-full p-2.5 border border-gray-300 rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-indigo-500">
                         <option value="" disabled selected>Seleccione gas...</option>
-                        ${mod1Substances.map(s => `<option value="${s.name}">${s.name} (${s.tariff})</option>`).join('')}
+                        ${mod1Substances.map(s => `<option value="${escapeHtml(s.name)}">${escapeHtml(s.name)} (${escapeHtml(s.tariff)})</option>`).join('')}
                     </select>
                 </div>
                 <div>
@@ -95,9 +95,9 @@ function renderQuotas() {
 
             html += `
                 <tr class="hover:bg-gray-50">
-                    <td class="p-3.5 font-bold text-gray-900">${q.company}</td>
-                    <td class="p-3.5 font-semibold text-indigo-700">${q.substance}</td>
-                    <td class="p-3.5 font-mono text-xs text-gray-600">${tariff}</td>
+                    <td class="p-3.5 font-bold text-gray-900">${escapeHtml(q.company)}</td>
+                    <td class="p-3.5 font-semibold text-indigo-700">${escapeHtml(q.substance)}</td>
+                    <td class="p-3.5 font-mono text-xs text-gray-600">${escapeHtml(tariff)}</td>
                     <td class="p-3.5 text-right font-bold">${dualQty(bal.limitTM, bal.limitCO2)}</td>
                     <td class="p-3.5 text-right text-gray-700">${dualQty(bal.usedTM, bal.usedCO2)}</td>
                     <td class="p-3.5 text-right ${remClass}">${dualQty(bal.remTM, bal.remCO2)}</td>
@@ -125,7 +125,7 @@ function updateQuotaSubstanceSelect() {
         if (filtered.length > 0) mod1Subs = filtered;
     }
     subSel.innerHTML = '<option value="" disabled selected>Seleccione gas...</option>' +
-        mod1Subs.map(s => `<option value="${s.name}">${s.name} (${s.tariff})</option>`).join('');
+        mod1Subs.map(s => `<option value="${escapeHtml(s.name)}">${escapeHtml(s.name)} (${escapeHtml(s.tariff)})</option>`).join('');
 }
 
 function handleQuotaSubmit(e) {

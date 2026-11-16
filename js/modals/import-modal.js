@@ -45,7 +45,7 @@ window.openModuleImportModal = function(modNum) {
     const compSel = document.getElementById('modal_company');
     const modCompanies = window.appState.companies.filter(c => !Array.isArray(c.modules) || c.modules.includes(mod));
     compSel.innerHTML = modCompanies.length > 0
-        ? modCompanies.map(c => `<option value="${c.name}">${c.name}</option>`).join('')
+        ? modCompanies.map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('')
         : `<option value="" disabled selected>Agregue una empresa al Módulo ${mod}...</option>`;
 
     onOrderDateOrCompanyChange();
@@ -75,7 +75,7 @@ window.onOrderDateOrCompanyChange = function() {
             document.getElementById('modal_tariff').value = '';
             document.getElementById('mod1_quota_available_text').innerText = 'Asigne primero una cuota a esta empresa en Asignación de Cuota o en el Balance del Módulo 1.';
         } else {
-            sel1.innerHTML = quotas.map(q => `<option value="${q.substance}">${q.substance} (Cuota: ${q.limit} Ton)</option>`).join('');
+            sel1.innerHTML = quotas.map(q => `<option value="${escapeHtml(q.substance)}">${escapeHtml(q.substance)} (Cuota: ${q.limit} Ton)</option>`).join('');
             autoFillTariffAndDetails('1');
         }
     } else if (mod === '2') {
@@ -85,7 +85,7 @@ window.onOrderDateOrCompanyChange = function() {
             const filtered = subs2.filter(s => compObj.allowedSubstances.includes(s.name));
             if (filtered.length > 0) subs2 = filtered;
         }
-        sel2.innerHTML = subs2.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+        sel2.innerHTML = subs2.map(s => `<option value="${escapeHtml(s.name)}">${escapeHtml(s.name)}</option>`).join('');
         autoFillTariffAndDetails('2');
     } else if (mod === '3') {
         const sel3 = document.getElementById('modal_type_select_mod3');
@@ -94,7 +94,7 @@ window.onOrderDateOrCompanyChange = function() {
             const filtered = subs3.filter(s => compObj.allowedSubstances.includes(s.name));
             if (filtered.length > 0) subs3 = filtered;
         }
-        sel3.innerHTML = subs3.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+        sel3.innerHTML = subs3.map(s => `<option value="${escapeHtml(s.name)}">${escapeHtml(s.name)}</option>`).join('');
         autoFillTariffAndDetails('3');
     }
 };
@@ -143,8 +143,12 @@ window.handleImportSubmit = function(e) {
 
     const selectEl = document.getElementById(`modal_type_select_mod${mod}`);
     const substanceOrType = selectEl ? selectEl.value : '';
-    if (!company || !substanceOrType) {
-        customAlert('Datos incompletos', 'Seleccione una empresa y una sustancia/equipo válido.');
+    const error = validateImportData({
+        mod, company, substance: substanceOrType, orderDate, arrivalDate, qty,
+        description: mod === '3' ? document.getElementById('modal_product_desc').value : undefined
+    });
+    if (error) {
+        customAlert('No se pudo registrar la importación', error);
         return;
     }
 
@@ -174,7 +178,7 @@ window.handleImportSubmit = function(e) {
         registeredAt: new Date().toISOString(),
         deliveredToAdmin: true,
         deliveredToCompany: true,
-        productDescription: mod === '3' ? document.getElementById('modal_product_desc').value : '',
+        productDescription: mod === '3' ? document.getElementById('modal_product_desc').value.trim() : '',
         contained: mod === '3' ? document.getElementById('modal_contained_gas').value : '',
         regStatus: mod === '3' ? document.getElementById('modal_reg_status').value : ''
     };

@@ -70,7 +70,7 @@ function renderModule2(activeImports) {
 
             html += `
                 <tr class="hover:bg-gray-50">
-                    <td class="p-3.5 font-bold text-gray-900">${c.name}</td>
+                    <td class="p-3.5 font-bold text-gray-900">${escapeHtml(c.name)}</td>
                     <td class="p-3.5 text-xs text-gray-600">${mod2Subs.length > 0 ? mod2Subs.join(', ') : 'Todas las sustancias del Módulo 2'}</td>
                     <td class="p-3.5 text-right font-extrabold text-emerald-700">${dualQty(totalTon, totalCO2)}</td>
                     <td class="p-3.5 text-right whitespace-nowrap">
@@ -117,16 +117,16 @@ function renderModule2(activeImports) {
                 <tr class="hover:bg-gray-50">
                     <td class="p-3.5">
                         <button onclick="openReceiptById('${imp.id}')" class="font-mono text-xs font-bold text-emerald-700 hover:underline bg-emerald-50 px-2 py-1 rounded">
-                            ${imp.trackingNumber || 'VER-QR'}
+                            ${escapeHtml(imp.trackingNumber || 'VER-QR')}
                         </button>
                     </td>
                     <td class="p-3.5 text-xs">
-                        <div class="font-bold text-gray-800">Orden: ${imp.orderDate}</div>
-                        <div class="text-gray-400">Llegada: ${imp.arrivalDate || 'Pendiente'}</div>
+                        <div class="font-bold text-gray-800">Orden: ${escapeHtml(imp.orderDate)}</div>
+                        <div class="text-gray-400">Llegada: ${escapeHtml(imp.arrivalDate || 'Pendiente')}</div>
                     </td>
-                    <td class="p-3.5 font-bold text-gray-900">${imp.company}</td>
-                    <td class="p-3.5 font-semibold text-emerald-700">${imp.type}</td>
-                    <td class="p-3.5 font-mono text-xs text-gray-600">${imp.tariff}</td>
+                    <td class="p-3.5 font-bold text-gray-900">${escapeHtml(imp.company)}</td>
+                    <td class="p-3.5 font-semibold text-emerald-700">${escapeHtml(imp.type)}</td>
+                    <td class="p-3.5 font-mono text-xs text-gray-600">${escapeHtml(imp.tariff)}</td>
                     <td class="p-3.5 text-right font-bold text-gray-900">${dualQty(imp.qty, calcCO2(imp.qty, imp.type))}</td>
                     <td class="p-3.5 text-right whitespace-nowrap">
                         <button onclick="openReceiptById('${imp.id}')" class="text-emerald-600 hover:text-emerald-800 font-bold text-xs mr-2">Recibo/QR</button>

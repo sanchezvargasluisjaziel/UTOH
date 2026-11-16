@@ -115,15 +115,19 @@ window.closeVerifyFolioModal = function() {
 window.verifyTrackingFolio = function() {
     const val = document.getElementById('verify_folio_input').value.trim().toUpperCase();
     const resDiv = document.getElementById('verify_folio_result');
+    if (!val) {
+        resDiv.innerHTML = `<div class="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800 font-bold">Escriba el folio que desea verificar.</div>`;
+        return;
+    }
     const found = window.appState.imports.find(i => (i.trackingNumber || '').toUpperCase() === val);
     if (!found) {
-        resDiv.innerHTML = `<div class="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 font-bold">❌ No se encontró ningún movimiento con el folio "${val}".</div>`;
+        resDiv.innerHTML = `<div class="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 font-bold">❌ No se encontró ningún movimiento con el folio "${escapeHtml(val)}".</div>`;
     } else {
         resDiv.innerHTML = `
             <div class="p-3.5 bg-emerald-50 border border-emerald-200 rounded-lg text-xs space-y-1">
-                <div class="font-bold text-emerald-900">✓ FOLIO OFICIAL VÁLIDO (${found.trackingNumber})</div>
-                <div><b>Empresa:</b> ${found.company}</div>
-                <div><b>Sustancia/Equipo:</b> ${found.type} (${found.tariff})</div>
+                <div class="font-bold text-emerald-900">✓ FOLIO OFICIAL VÁLIDO (${escapeHtml(found.trackingNumber)})</div>
+                <div><b>Empresa:</b> ${escapeHtml(found.company)}</div>
+                <div><b>Sustancia/Equipo:</b> ${escapeHtml(found.type)} (${escapeHtml(found.tariff)})</div>
                 <div><b>Cantidad:</b> ${found.qty} ${found.module === '3' ? 'Unidades' : 'Ton'} | <b>AF:</b> ${found.fiscalYear}</div>
                 <button onclick="closeVerifyFolioModal(); openReceiptById('${found.id}')" class="mt-2 w-full py-1.5 bg-emerald-600 text-white rounded font-bold">Abrir Comprobante Completo</button>
             </div>

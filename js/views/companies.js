@@ -164,14 +164,14 @@ window.renderDynamicSubstancePicker = function(prefix) {
         html += `<div class="text-[10px] font-bold uppercase text-indigo-700 bg-indigo-50 px-2 py-1 rounded mt-1">${modTitle}</div>`;
         group.forEach(s => {
             const checked = setRef.has(s.name) ? 'checked' : '';
-            const safeName = s.name.replace(/'/g, "\\'");
+            const safeName = jsArg(s.name);
             html += `
                 <label class="flex items-center justify-between px-2 py-1 bg-white hover:bg-gray-50 rounded border border-gray-100 cursor-pointer text-xs">
                     <span class="flex items-center space-x-2 truncate pr-2">
-                        <input type="checkbox" ${checked} onchange="toggleSingleSubstance('${prefix}', '${safeName}', this.checked)" class="rounded text-indigo-600 h-3.5 w-3.5">
-                        <span class="truncate font-medium text-gray-800">${s.name}</span>
+                        <input type="checkbox" ${checked} onchange="toggleSingleSubstance('${prefix}', ${safeName}, this.checked)" class="rounded text-indigo-600 h-3.5 w-3.5">
+                        <span class="truncate font-medium text-gray-800">${escapeHtml(s.name)}</span>
                     </span>
-                    <span class="font-mono text-[10px] text-gray-400 shrink-0">${s.tariff}</span>
+                    <span class="font-mono text-[10px] text-gray-400 shrink-0">${escapeHtml(s.tariff)}</span>
                 </label>
             `;
         });

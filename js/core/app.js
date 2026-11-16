@@ -90,7 +90,7 @@ function renderCompanyMonitorBanner() {
     if (!monitored) return '';
     return `
         <div class="mb-4 bg-indigo-900 text-white px-4 py-2.5 rounded-xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <span class="text-xs sm:text-sm">Vista filtrada para empresa: <b>${monitored}</b></span>
+            <span class="text-xs sm:text-sm">Vista filtrada para empresa: <b>${escapeHtml(monitored)}</b></span>
             <div class="flex items-center gap-2">
                 <button onclick="switchTab('portal')" class="text-xs bg-emerald-600 hover:bg-emerald-500 px-3 py-1 rounded font-semibold">Mi Portal</button>
                 <button onclick="document.getElementById('user-role-selector').value='Admin 1 (Sistema)'; renderAll();" class="text-xs bg-indigo-700 hover:bg-indigo-600 px-3 py-1 rounded font-semibold">Ver Todo (Admin)</button>

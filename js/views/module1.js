@@ -109,23 +109,23 @@ function renderModule1(activeImports) {
             const tariff = subObj ? subObj.tariff : '---';
             const bal = getQuotaBalance(row.company, row.substance, currentFY);
             const remClass = bal.remTM < 0 ? 'text-red-600 font-extrabold' : 'text-emerald-700 font-extrabold';
-            const safeComp = row.company.replace(/'/g, "\\'");
-            const safeSub = row.substance.replace(/'/g, "\\'");
+            const safeComp = jsArg(row.company);
+            const safeSub = jsArg(row.substance);
 
             html += `
                 <tr class="hover:bg-gray-50">
-                    <td class="p-3.5 font-bold text-gray-900">${row.company}</td>
-                    <td class="p-3.5 font-semibold text-indigo-700">${row.substance}</td>
-                    <td class="p-3.5 font-mono text-xs text-gray-600">${tariff}</td>
+                    <td class="p-3.5 font-bold text-gray-900">${escapeHtml(row.company)}</td>
+                    <td class="p-3.5 font-semibold text-indigo-700">${escapeHtml(row.substance)}</td>
+                    <td class="p-3.5 font-mono text-xs text-gray-600">${escapeHtml(tariff)}</td>
                     <td class="p-3.5 text-right font-bold">${dualQty(bal.limitTM, bal.limitCO2)}</td>
                     <td class="p-3.5 text-right text-amber-700 font-bold">${dualQty(bal.usedTM, bal.usedCO2)}</td>
                     <td class="p-3.5 text-right ${remClass}">${dualQty(bal.remTM, bal.remCO2)}</td>
                     <td class="p-3.5 text-right whitespace-nowrap">
                         ${row.quotaId
                             ? `<button onclick="openEditQuotaModal('${row.quotaId}')" class="px-2.5 py-1 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded font-bold text-xs mr-1.5">Editar Cuota</button>`
-                            : `<button onclick="quickAssignQuotaFromMod1('${safeComp}', '${safeSub}')" class="px-2.5 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded font-bold text-xs mr-1.5">Asignar Cuota</button>`
+                            : `<button onclick="quickAssignQuotaFromMod1(${safeComp}, ${safeSub})" class="px-2.5 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded font-bold text-xs mr-1.5">Asignar Cuota</button>`
                         }
-                        <button onclick="deleteBalanceCompanyRowMod1('${safeComp}', '${safeSub}', '${row.quotaId || ''}')" class="px-2.5 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded font-bold text-xs">Eliminar</button>
+                        <button onclick="deleteBalanceCompanyRowMod1(${safeComp}, ${safeSub}, '${row.quotaId || ''}')" class="px-2.5 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded font-bold text-xs">Eliminar</button>
                     </td>
                 </tr>
             `;
@@ -168,16 +168,16 @@ function renderModule1(activeImports) {
                 <tr class="hover:bg-gray-50">
                     <td class="p-3.5">
                         <button onclick="openReceiptById('${imp.id}')" class="font-mono text-xs font-bold text-indigo-600 hover:underline bg-indigo-50 px-2 py-1 rounded">
-                            ${imp.trackingNumber || 'VER-QR'}
+                            ${escapeHtml(imp.trackingNumber || 'VER-QR')}
                         </button>
                     </td>
                     <td class="p-3.5 text-xs">
-                        <div class="font-bold text-gray-800">Orden: ${imp.orderDate}</div>
-                        <div class="text-gray-400">Llegada: ${imp.arrivalDate || 'Pendiente'}</div>
+                        <div class="font-bold text-gray-800">Orden: ${escapeHtml(imp.orderDate)}</div>
+                        <div class="text-gray-400">Llegada: ${escapeHtml(imp.arrivalDate || 'Pendiente')}</div>
                     </td>
-                    <td class="p-3.5 font-bold text-gray-900">${imp.company}</td>
-                    <td class="p-3.5 font-semibold text-indigo-700">${imp.type}</td>
-                    <td class="p-3.5 font-mono text-xs text-gray-600">${imp.tariff}</td>
+                    <td class="p-3.5 font-bold text-gray-900">${escapeHtml(imp.company)}</td>
+                    <td class="p-3.5 font-semibold text-indigo-700">${escapeHtml(imp.type)}</td>
+                    <td class="p-3.5 font-mono text-xs text-gray-600">${escapeHtml(imp.tariff)}</td>
                     <td class="p-3.5 text-right font-bold text-gray-900">${dualQty(imp.qty, calcCO2(imp.qty, imp.type))}</td>
                     <td class="p-3.5 text-right whitespace-nowrap">
                         <button onclick="openReceiptById('${imp.id}')" class="text-emerald-600 hover:text-emerald-800 font-bold text-xs mr-2">Recibo/QR</button>

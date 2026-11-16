@@ -146,9 +146,16 @@ window.saveEdit = function() {
     if (type === 'quota') {
         const q = window.appState.quotas.find(x => x.id === id);
         if (q) {
-            q.limit = parseFloat(document.getElementById('edit-modal-limit').value || 0);
+            const limit = parseFloat(document.getElementById('edit-modal-limit').value);
             const co2Raw = document.getElementById('edit-modal-limitco2').value;
-            q.limitCO2 = co2Raw === '' ? null : parseFloat(co2Raw);
+            const limitCO2 = co2Raw === '' ? null : parseFloat(co2Raw);
+            const error = validateQuotaData({ company: q.company, substance: q.substance, year: q.year, limit, limitCO2, isEdit: true });
+            if (error) {
+                customAlert('No se pudo guardar la cuota', error);
+                return;
+            }
+            q.limit = limit;
+            q.limitCO2 = limitCO2;
             logAudit(`Modificó cuota de ${q.company} (${q.substance}) a ${q.limit} Ton`, 'Módulo 1 / Cuotas');
             showToast('Cuota actualizada correctamente');
         }
@@ -199,28 +206,75 @@ window.saveEdit = function() {
     } else if (type === 'substance') {
         const s = window.appState.substances.find(x => x.id === id);
         if (s) {
-            s.name = document.getElementById('edit-modal-input').value.trim();
-            s.module = document.getElementById('edit-modal-module').value;
-            s.tariff = document.getElementById('edit-modal-tariff').value.trim();
-            s.refrigerant = document.getElementById('edit-modal-refrigerant').value.trim();
+            const oldName = s.name;
+            const newName = document.getElementById('edit-modal-input').value.trim();
+            const newModule = document.getElementById('edit-modal-module').value;
+            const newTariff = document.getElementById('edit-modal-tariff').value.trim();
+            const newRefrigerant = document.getElementById('edit-modal-refrigerant').value.trim();
             const gwpRaw = document.getElementById('edit-modal-gwp').value;
-            s.gwp = (s.module === '3' || gwpRaw === '') ? null : parseFloat(gwpRaw);
+            const newGwp = (newModule === '3' || gwpRaw === '') ? null : parseFloat(gwpRaw);
+            const error = validateSubstanceData({ name: newName, tariff: newTariff, module: newModule, gwp: newGwp, refrigerant: newRefrigerant, excludeId: s.id });
+            if (error) {
+                customAlert('No se pudo guardar la sustancia', error);
+                return;
+            }
+            const usedBy = countSubstanceUsage(oldName, s.module);
+            if (newModule !== String(s.module) && (usedBy.quotas > 0 || usedBy.imports > 0)) {
+                customAlert('No se puede cambiar el módulo', `"${oldName}" ya tiene ${usedBy.quotas} cuota(s) y ${usedBy.imports} importación(es) registradas.`);
+                return;
+            }
+            // Si cambia el nombre, se actualiza en cuotas, importaciones y empresas para no perder la relación
+            if (newName !== oldName) {
+                window.appState.quotas.forEach(q => { if (q.substance === oldName && String(s.module) === '1') q.substance = newName; });
+                window.appState.imports.forEach(i => { if (i.type === oldName && String(i.module) === String(s.module)) i.type = newName; });
+                window.appState.companies.forEach(c => {
+                    if (Array.isArray(c.allowedSubstances)) c.allowedSubstances = c.allowedSubstances.map(n => n === oldName ? newName : n);
+                });
+            }
+            s.name = newName;
+            s.module = newModule;
+            s.tariff = newTariff;
+            s.refrigerant = newRefrigerant;
+            s.gwp = newGwp;
             logAudit(`Editó sustancia/equipo "${s.name}"`, 'Catálogo');
             showToast('Sustancia actualizada');
         }
     } else if (type === 'year') {
         const y = window.appState.fiscalYears.find(x => x.id === id);
         if (y) {
-            y.year = parseInt(document.getElementById('edit-modal-input').value, 10);
+            const newYear = parseInt(document.getElementById('edit-modal-input').value, 10);
+            const error = validateYear(newYear, y.id);
+            if (error) {
+                customAlert('No se pudo guardar el año fiscal', error);
+                return;
+            }
+            const inUse = window.appState.quotas.some(q => Number(q.year) === Number(y.year)) ||
+                          window.appState.imports.some(i => Number(i.fiscalYear) === Number(y.year));
+            if (inUse && newYear !== Number(y.year)) {
+                customAlert('No se puede cambiar el año', `El AF ${y.year} ya tiene cuotas o importaciones registradas.`);
+                return;
+            }
+            y.year = newYear;
+            logAudit(`Editó Año Fiscal a ${newYear}`, 'Años Fiscales');
             showToast('Año fiscal actualizado');
         }
     } else if (type === 'import') {
         const imp = window.appState.imports.find(x => x.id === id);
         if (imp) {
-            imp.qty = imp.module === '3'
+            const newQty = imp.module === '3'
                 ? parseInt(document.getElementById('edit-modal-limit').value, 10)
                 : parseFloat(document.getElementById('edit-modal-limit').value);
-            imp.orderDate = document.getElementById('edit-modal-date').value;
+            const newDate = document.getElementById('edit-modal-date').value;
+            const error = validateImportData({
+                mod: imp.module, company: imp.company, substance: imp.type,
+                orderDate: newDate, arrivalDate: imp.arrivalDate, qty: newQty, excludeId: imp.id
+            });
+            if (error) {
+                customAlert('No se pudo guardar el movimiento', error);
+                return;
+            }
+            imp.qty = newQty;
+            imp.orderDate = newDate;
             imp.fiscalYear = calculateFiscalYear(imp.orderDate);
             logAudit(`Editó movimiento [${imp.trackingNumber}]: cantidad=${imp.qty}, fecha=${imp.orderDate}`, `Módulo ${imp.module}`);
             showToast('Movimiento actualizado');
@@ -231,7 +285,23 @@ window.saveEdit = function() {
     window.renderAll();
 };
 
+// Cuántas cuotas e importaciones usan una sustancia o equipo.
+window.countSubstanceUsage = function(name, module) {
+    return {
+        quotas: String(module) === '1' ? window.appState.quotas.filter(q => q.substance === name).length : 0,
+        imports: window.appState.imports.filter(i => i.type === name && String(i.module) === String(module)).length
+    };
+};
+
 window.deleteQuota = function(id) {
+    const quota = window.appState.quotas.find(q => q.id === id);
+    if (quota) {
+        const bal = getQuotaBalance(quota.company, quota.substance, quota.year);
+        if (bal.usedTM > 0) {
+            customAlert('No se puede eliminar la cuota', `${quota.company} ya importó ${fmtNum(bal.usedTM)} TM de ${quota.substance} en el AF ${quota.year}. Elimine primero esas importaciones.`);
+            return;
+        }
+    }
     customConfirm('Eliminar Cuota', '¿Desea eliminar este registro de cuota?', () => {
         window.appState.quotas = window.appState.quotas.filter(q => q.id !== id);
         window.renderAll();
@@ -258,6 +328,14 @@ window.deleteCompany = function(id) {
 };
 
 window.deleteSubstance = function(id) {
+    const sub = window.appState.substances.find(s => s.id === id);
+    if (sub) {
+        const usage = countSubstanceUsage(sub.name, sub.module);
+        if (usage.quotas > 0 || usage.imports > 0) {
+            customAlert('No se puede eliminar', `"${sub.name}" tiene ${usage.quotas} cuota(s) y ${usage.imports} importación(es) registradas. Elimínelas primero.`);
+            return;
+        }
+    }
     customConfirm('Eliminar Sustancia', '¿Desea eliminar este elemento del catálogo?', () => {
         window.appState.substances = window.appState.substances.filter(s => s.id !== id);
         window.renderAll();

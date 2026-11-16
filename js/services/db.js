@@ -28,6 +28,11 @@ window.saveCompanyToDB = function(name, rtn, modules, allowedSubstances = []) {
 };
 
 window.saveQuotaToDB = function(company, substance, limit, year, limitCO2 = null) {
+    const error = validateQuotaData({ company, substance, year, limit, limitCO2 });
+    if (error) {
+        customAlert('No se pudo guardar la cuota', error);
+        return false;
+    }
     const existing = window.appState.quotas.find(q => q.company === company && q.substance === substance && Number(q.year) === Number(year));
     if (existing) {
         existing.limit = Number(limit);
@@ -46,4 +51,5 @@ window.saveQuotaToDB = function(company, substance, limit, year, limitCO2 = null
     }
     showToast(`Cuota guardada para ${company}`);
     window.renderAll();
+    return true;
 };

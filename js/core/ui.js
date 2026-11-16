@@ -38,7 +38,11 @@ window.showToast = function(msg) {
     if (!container) return;
     const toast = document.createElement('div');
     toast.className = "bg-slate-900 text-white px-4 py-3 rounded-xl shadow-lg text-xs font-semibold flex items-center space-x-2 border border-slate-700";
-    toast.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span><span>${msg}</span>`;
+    const dot = document.createElement('span');
+    dot.className = 'w-2 h-2 rounded-full bg-emerald-400 shrink-0';
+    const text = document.createElement('span');
+    text.textContent = msg;
+    toast.append(dot, text);
     container.appendChild(toast);
     setTimeout(() => toast.remove(), 3200);
 };
