@@ -30,3 +30,35 @@ body {
         box-shadow: none !important;
     }
 }
+
+/* Reportes impresos (módulos 1, 2, 3 y auditoría) */
+#printable-report {
+    display: none;
+}
+@media print {
+    body.printing-report {
+        display: block !important;
+        height: auto !important;
+        overflow: visible !important;
+        background: #fff !important;
+    }
+    body.printing-report > *:not(#printable-report) {
+        display: none !important;
+    }
+    body.printing-report #printable-report {
+        display: block;
+        padding: 0;
+        color: #0f172a;
+        font-family: 'Inter', sans-serif;
+    }
+    body.printing-report #printable-report,
+    body.printing-report #printable-report * {
+        visibility: visible;
+    }
+    body.printing-report #printable-report thead {
+        display: table-header-group;
+    }
+    body.printing-report #printable-report tr {
+        page-break-inside: avoid;
+    }
+}

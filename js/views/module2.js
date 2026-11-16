@@ -6,7 +6,7 @@
 function renderModule2(activeImports) {
     const currentFY = getActiveFiscalYear();
     const monitored = getMonitoredCompanyFilter();
-    const mod2Imports = activeImports.filter(i => String(i.module) === '2');
+    const mod2Imports = filterByMonth(activeImports.filter(i => String(i.module) === '2'), 'mod2');
 
     // Todas las empresas registradas en el Módulo 2 aparecen automáticamente
     let mod2Companies = window.appState.companies.filter(c => Array.isArray(c.modules) && c.modules.includes('2'));
@@ -32,6 +32,8 @@ function renderModule2(activeImports) {
             </div>
         </div>
 
+        ${renderReportToolbar('mod2')}
+
         <!-- Empresas Activas en Módulo 2 -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
             <div class="px-5 py-3.5 border-b border-gray-100 flex justify-between items-center bg-emerald-50/50">
@@ -44,7 +46,7 @@ function renderModule2(activeImports) {
                         <tr class="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500">
                             <th class="p-3.5 font-semibold">Empresa Importadora</th>
                             <th class="p-3.5 font-semibold">Sustancias No Reguladas que Importa</th>
-                            <th class="p-3.5 font-semibold text-right">Total Importado AF ${currentFY} (TM / TCO₂eq)</th>
+                            <th class="p-3.5 font-semibold text-right">Total Importado AF ${currentFY} · ${monthLabel('mod2')} (TM / TCO₂eq)</th>
                             <th class="p-3.5 font-semibold text-right">Acciones</th>
                         </tr>
                     </thead>
@@ -88,7 +90,7 @@ function renderModule2(activeImports) {
         <!-- Movimientos Detallados Módulo 2 -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="px-5 py-3.5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                <h3 class="font-bold text-gray-800 text-sm">Movimientos de Importación Registrados — Módulo 2</h3>
+                <h3 class="font-bold text-gray-800 text-sm">Movimientos de Importación Registrados — Módulo 2 (AF ${currentFY} · ${monthLabel('mod2')})</h3>
                 <span class="text-xs font-semibold text-gray-500">${mod2Imports.length} movimientos</span>
             </div>
             <div class="overflow-x-auto">

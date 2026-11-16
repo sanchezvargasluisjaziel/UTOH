@@ -6,7 +6,7 @@
 function renderModule1(activeImports) {
     const currentFY = getActiveFiscalYear();
     const monitored = getMonitoredCompanyFilter();
-    const mod1Imports = activeImports.filter(i => String(i.module) === '1');
+    const mod1Imports = filterByMonth(activeImports.filter(i => String(i.module) === '1'), 'mod1');
 
     // Asegurar que todas las empresas del Módulo 1 aparezcan en el Balance aunque recién se hayan agregado
     let mod1Companies = window.appState.companies.filter(c => !Array.isArray(c.modules) || c.modules.includes('1'));
@@ -74,6 +74,8 @@ function renderModule1(activeImports) {
             </div>
         </div>
 
+        ${renderReportToolbar('mod1')}
+
         <!-- Tabla 1: Balance por Empresa Importadora (EDITABLE DIRECTAMENTE) -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
             <div class="px-5 py-3.5 border-b border-gray-100 flex justify-between items-center bg-indigo-50/50">
@@ -139,7 +141,7 @@ function renderModule1(activeImports) {
         <!-- Tabla 2: Historial de Órdenes de Importación del Módulo 1 -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="px-5 py-3.5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                <h3 class="font-bold text-gray-800 text-sm">Movimientos de Importación Registrados — Módulo 1 (AF ${currentFY})</h3>
+                <h3 class="font-bold text-gray-800 text-sm">Movimientos de Importación Registrados — Módulo 1 (AF ${currentFY} · ${monthLabel('mod1')})</h3>
                 <span class="text-xs font-semibold text-gray-500">${mod1Imports.length} movimientos</span>
             </div>
             <div class="overflow-x-auto">

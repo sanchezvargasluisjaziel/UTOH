@@ -6,7 +6,7 @@
 function renderModule3(activeImports) {
     const currentFY = getActiveFiscalYear();
     const monitored = getMonitoredCompanyFilter();
-    const mod3Imports = activeImports.filter(i => String(i.module) === '3');
+    const mod3Imports = filterByMonth(activeImports.filter(i => String(i.module) === '3'), 'mod3');
 
     let mod3Companies = window.appState.companies.filter(c => Array.isArray(c.modules) && c.modules.includes('3'));
     if (monitored) mod3Companies = mod3Companies.filter(c => c.name === monitored);
@@ -31,6 +31,8 @@ function renderModule3(activeImports) {
             </div>
         </div>
 
+        ${renderReportToolbar('mod3')}
+
         <!-- Empresas Activas en Módulo 3 -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
             <div class="px-5 py-3.5 border-b border-gray-100 flex justify-between items-center bg-purple-50/50">
@@ -43,7 +45,7 @@ function renderModule3(activeImports) {
                         <tr class="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500">
                             <th class="p-3.5 font-semibold">Empresa Importadora</th>
                             <th class="p-3.5 font-semibold">Categorías de Equipos Autorizadas</th>
-                            <th class="p-3.5 font-semibold text-right">Total Unidades AF ${currentFY}</th>
+                            <th class="p-3.5 font-semibold text-right">Total Unidades AF ${currentFY} · ${monthLabel('mod3')}</th>
                             <th class="p-3.5 font-semibold text-right">Acciones</th>
                         </tr>
                     </thead>
