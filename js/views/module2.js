@@ -32,6 +32,7 @@ function renderModule2(activeImports) {
             </div>
         </div>
 
+        ${renderGwpNotice(mod2Imports.map(i => i.type))}
         ${renderReportToolbar('mod2')}
 
         <!-- Empresas Activas en Módulo 2 -->

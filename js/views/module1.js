@@ -74,6 +74,7 @@ function renderModule1(activeImports) {
             </div>
         </div>
 
+        ${renderGwpNotice([...balanceRows.map(r => r.substance), ...mod1Imports.map(i => i.type)])}
         ${renderReportToolbar('mod1')}
 
         <!-- Tabla 1: Balance por Empresa Importadora (EDITABLE DIRECTAMENTE) -->

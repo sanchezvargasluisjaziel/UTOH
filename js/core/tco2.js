@@ -56,3 +56,19 @@ window.getQuotaBalance = function(company, substance, fy, excludeImportId = null
 window.dualQty = function(tm, co2, tmClass = '', unit = 'Ton') {
     return `<div class="${tmClass}">${fmtNum(tm)} ${unit}</div><div class="text-[11px] font-semibold text-gray-500">${fmtCO2(co2)}</div>`;
 };
+
+// Aviso cuando alguna sustancia de la vista no tiene factor TCO2eq (sus equivalentes salen como "—").
+window.renderGwpNotice = function(substanceNames) {
+    const missing = [...new Set(substanceNames)].filter(n => {
+        const s = window.appState.substances.find(x => x.name === n && String(x.module) !== '3');
+        return s && getGwp(n) === null;
+    });
+    if (missing.length === 0) return '';
+    const list = missing.slice(0, 4).map(escapeHtml).join(', ') + (missing.length > 4 ? ` y ${missing.length - 4} más` : '');
+    return `
+        <div class="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl px-4 py-3 text-xs">
+            <span><b>${missing.length} sustancia(s) sin factor TCO₂eq</b> (${list}). Sus equivalentes se muestran como «—» hasta que se capture el factor.</span>
+            <button onclick="switchTab('substances')" class="shrink-0 px-3 py-1.5 bg-amber-100 hover:bg-amber-200 rounded-lg font-bold">Ir al Catálogo de Sustancias</button>
+        </div>
+    `;
+};

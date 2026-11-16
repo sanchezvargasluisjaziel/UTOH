@@ -29,6 +29,8 @@ function renderQuotas() {
             </div>
         </div>
 
+        ${renderGwpNotice(quotasList.map(q => q.substance))}
+
         <!-- Formulario Asignación -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 mb-6">
             <form onsubmit="handleQuotaSubmit(event)" class="grid grid-cols-1 sm:grid-cols-5 gap-3 items-end">
