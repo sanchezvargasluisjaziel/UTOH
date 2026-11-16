@@ -91,6 +91,9 @@
                 <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                 Dejar Módulos en Blanco
             </button>
+            <button onclick="resetToDemoData()" class="w-full py-2 px-3 bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 rounded-lg text-xs font-semibold transition-colors">
+                Restaurar datos de demostración
+            </button>
             <div class="flex items-center justify-between text-[11px] text-gray-500 px-1">
                 <span>Año Fiscal: 2 Ene - 31 Dic</span>
                 <span class="inline-flex items-center text-emerald-600 font-semibold"><span class="w-2 h-2 rounded-full bg-emerald-500 mr-1"></span>En Línea</span>
@@ -627,6 +630,7 @@
     <!-- Scripts de la aplicación (el orden importa: datos → núcleo → vistas → modales → inicio) -->
     <script src="js/data/substances-catalog.js"></script>
     <script src="js/data/demo-data.js"></script>
+    <script src="js/core/storage.js"></script>
     <script src="js/core/state.js"></script>
     <script src="js/core/helpers.js"></script>
     <script src="js/core/ui.js"></script>

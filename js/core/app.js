@@ -4,6 +4,7 @@ window.renderAll = function() {
     updateGlobalDropdowns();
     renderActiveTab();
     updateTopRegisterButton();
+    window.savePersistedState();
 };
 
 function updateGlobalDropdowns() {

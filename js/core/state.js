@@ -18,6 +18,12 @@ window.appState = {
     ]
 };
 
+// Si hay datos guardados en localStorage, reemplazan a los de demostración.
+(function hydrateFromStorage() {
+    const saved = window.loadPersistedState();
+    if (saved) window.PERSISTED_KEYS.forEach(k => { window.appState[k] = saved[k]; });
+})();
+
 window.tempSelectedSubstances = {
     cat: new Set(),
     qc: new Set(),
