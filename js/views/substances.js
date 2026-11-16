@@ -13,7 +13,7 @@ function renderSubstances() {
 
         <!-- Formulario Agregar Sustancia o Equipo -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 mb-6">
-            <form onsubmit="handleAddSubstance(event)" class="grid grid-cols-1 sm:grid-cols-5 gap-3 items-end">
+            <form onsubmit="handleAddSubstance(event)" class="grid grid-cols-1 sm:grid-cols-6 gap-3 items-end">
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">Nombre de Sustancia / Equipo</label>
                     <input type="text" id="sub_name" required class="w-full p-2 border border-gray-300 rounded-lg text-sm" placeholder="Ej. R-410A o Split System">
@@ -24,11 +24,15 @@ function renderSubstances() {
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">Módulo</label>
-                    <select id="sub_module" onchange="document.getElementById('sub_ref_wrap').classList.toggle('hidden', this.value !== '3')" class="w-full p-2 border border-gray-300 rounded-lg text-sm bg-white">
+                    <select id="sub_module" onchange="document.getElementById('sub_ref_wrap').classList.toggle('hidden', this.value !== '3'); document.getElementById('sub_gwp_wrap').classList.toggle('hidden', this.value === '3')" class="w-full p-2 border border-gray-300 rounded-lg text-sm bg-white">
                         <option value="1">Módulo 1: Gas Regulado</option>
                         <option value="2">Módulo 2: Gas No Regulado</option>
                         <option value="3">Módulo 3: Equipo / Aparato</option>
                     </select>
+                </div>
+                <div id="sub_gwp_wrap">
+                    <label class="block text-xs font-bold text-gray-700 mb-1">Factor TCO₂eq por TM</label>
+                    <input type="number" step="0.01" min="0" id="sub_gwp" class="w-full p-2 border border-gray-300 rounded-lg text-sm" placeholder="Ej. 1810">
                 </div>
                 <div id="sub_ref_wrap" class="hidden">
                     <label class="block text-xs font-bold text-gray-700 mb-1">Gas que usa el Equipo</label>
@@ -50,6 +54,7 @@ function renderSubstances() {
                             <th class="p-3.5 font-semibold">Nombre / Descripción</th>
                             <th class="p-3.5 font-semibold">Fracción Arancelaria</th>
                             <th class="p-3.5 font-semibold">Clasificación</th>
+                            <th class="p-3.5 font-semibold text-right">Factor TCO₂eq / TM</th>
                             <th class="p-3.5 font-semibold text-right">Acciones</th>
                         </tr>
                     </thead>
@@ -62,6 +67,7 @@ function renderSubstances() {
                                 </td>
                                 <td class="p-3.5 font-mono text-xs text-gray-700">${s.tariff}</td>
                                 <td class="p-3.5 text-xs font-bold">Módulo ${s.module}</td>
+                                <td class="p-3.5 text-right text-xs">${String(s.module) === '3' ? '<span class="text-gray-400">No aplica</span>' : (getGwp(s.name) !== null ? `<b>${fmtNum(getGwp(s.name))}</b>` : '<span class="px-2 py-0.5 rounded bg-amber-50 text-amber-700 font-semibold">Sin factor</span>')}</td>
                                 <td class="p-3.5 text-right whitespace-nowrap">
                                     <button onclick="openEditSubstanceModal('${s.id}')" class="text-indigo-600 hover:underline font-bold text-xs mr-3">Editar</button>
                                     <button onclick="deleteSubstance('${s.id}')" class="text-red-500 hover:underline font-bold text-xs">Eliminar</button>
@@ -82,12 +88,14 @@ function handleAddSubstance(e) {
     const tariff = document.getElementById('sub_tariff').value.trim();
     const module = document.getElementById('sub_module').value;
     const refrigerant = document.getElementById('sub_refrigerant')?.value.trim() || '';
+    const gwpRaw = document.getElementById('sub_gwp')?.value || '';
     window.appState.substances.unshift({
         id: 'sub_' + Date.now(),
         name,
         tariff,
         module,
-        refrigerant
+        refrigerant,
+        gwp: (module === '3' || gwpRaw === '') ? null : parseFloat(gwpRaw)
     });
     logAudit(`Agregó sustancia/equipo ${name} (${tariff}) al Módulo ${module}`, 'Catálogo');
     showToast(`Sustancia agregada al Módulo ${module}`);

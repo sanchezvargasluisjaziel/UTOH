@@ -46,10 +46,11 @@ window.saveCompanyToDB = function(name, modules, allowedSubstances = []) {
     window.renderAll();
 };
 
-window.saveQuotaToDB = function(company, substance, limit, year) {
+window.saveQuotaToDB = function(company, substance, limit, year, limitCO2 = null) {
     const existing = window.appState.quotas.find(q => q.company === company && q.substance === substance && Number(q.year) === Number(year));
     if (existing) {
         existing.limit = Number(limit);
+        existing.limitCO2 = limitCO2;
         logAudit(`Actualizó cuota de ${company} (${substance}) a ${limit} Ton en AF ${year}`, 'Asignación de Cuota');
     } else {
         window.appState.quotas.push({
@@ -57,6 +58,7 @@ window.saveQuotaToDB = function(company, substance, limit, year) {
             company,
             substance,
             limit: Number(limit),
+            limitCO2: limitCO2,
             year: Number(year)
         });
         logAudit(`Asignó nueva cuota a ${company}: ${limit} Ton de ${substance} (AF ${year})`, 'Asignación de Cuota');

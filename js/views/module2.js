@@ -44,7 +44,7 @@ function renderModule2(activeImports) {
                         <tr class="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500">
                             <th class="p-3.5 font-semibold">Empresa Importadora</th>
                             <th class="p-3.5 font-semibold">Sustancias No Reguladas que Importa</th>
-                            <th class="p-3.5 font-semibold text-right">Total Importado AF ${currentFY}</th>
+                            <th class="p-3.5 font-semibold text-right">Total Importado AF ${currentFY} (TM / TCO₂eq)</th>
                             <th class="p-3.5 font-semibold text-right">Acciones</th>
                         </tr>
                     </thead>
@@ -62,12 +62,15 @@ function renderModule2(activeImports) {
             const totalTon = mod2Imports
                 .filter(i => i.company === c.name)
                 .reduce((acc, cur) => acc + parseFloat(cur.qty || 0), 0);
+            const totalCO2 = mod2Imports
+                .filter(i => i.company === c.name)
+                .reduce((acc, cur) => { const v = calcCO2(cur.qty, cur.type); return (v === null || acc === null) ? null : acc + v; }, 0);
 
             html += `
                 <tr class="hover:bg-gray-50">
                     <td class="p-3.5 font-bold text-gray-900">${c.name}</td>
                     <td class="p-3.5 text-xs text-gray-600">${mod2Subs.length > 0 ? mod2Subs.join(', ') : 'Todas las sustancias del Módulo 2'}</td>
-                    <td class="p-3.5 text-right font-extrabold text-emerald-700">${totalTon.toLocaleString('en-US', {minimumFractionDigits: 2})} Ton</td>
+                    <td class="p-3.5 text-right font-extrabold text-emerald-700">${dualQty(totalTon, totalCO2)}</td>
                     <td class="p-3.5 text-right whitespace-nowrap">
                         <button onclick="openEditCompanyModal('${c.id}')" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded font-bold text-xs">Editar Empresa</button>
                     </td>
@@ -97,7 +100,7 @@ function renderModule2(activeImports) {
                             <th class="p-3.5 font-semibold">Empresa</th>
                             <th class="p-3.5 font-semibold">Gas No Regulado</th>
                             <th class="p-3.5 font-semibold">Fracción Arancelaria</th>
-                            <th class="p-3.5 font-semibold text-right">Cantidad (Ton)</th>
+                            <th class="p-3.5 font-semibold text-right">Cantidad (TM / TCO₂eq)</th>
                             <th class="p-3.5 font-semibold text-right">Acciones</th>
                         </tr>
                     </thead>
@@ -122,7 +125,7 @@ function renderModule2(activeImports) {
                     <td class="p-3.5 font-bold text-gray-900">${imp.company}</td>
                     <td class="p-3.5 font-semibold text-emerald-700">${imp.type}</td>
                     <td class="p-3.5 font-mono text-xs text-gray-600">${imp.tariff}</td>
-                    <td class="p-3.5 text-right font-bold text-gray-900">${Number(imp.qty).toLocaleString('en-US', {minimumFractionDigits: 2})} Ton</td>
+                    <td class="p-3.5 text-right font-bold text-gray-900">${dualQty(imp.qty, calcCO2(imp.qty, imp.type))}</td>
                     <td class="p-3.5 text-right whitespace-nowrap">
                         <button onclick="openReceiptById('${imp.id}')" class="text-emerald-600 hover:text-emerald-800 font-bold text-xs mr-2">Recibo/QR</button>
                         <button onclick="openEditImportModal('${imp.id}')" class="text-indigo-600 hover:text-indigo-900 font-bold text-xs mr-2">Editar</button>

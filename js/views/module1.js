@@ -90,9 +90,9 @@ function renderModule1(activeImports) {
                             <th class="p-3.5 font-semibold">Empresa Importadora</th>
                             <th class="p-3.5 font-semibold">Gas Regulado</th>
                             <th class="p-3.5 font-semibold">Fracción Arancelaria</th>
-                            <th class="p-3.5 font-semibold text-right">Cuota Permitida</th>
-                            <th class="p-3.5 font-semibold text-right">Importado (Resta)</th>
-                            <th class="p-3.5 font-semibold text-right">Saldo Restante</th>
+                            <th class="p-3.5 font-semibold text-right">Cuota Permitida (TM / TCO₂eq)</th>
+                            <th class="p-3.5 font-semibold text-right">Importado (TM / TCO₂eq)</th>
+                            <th class="p-3.5 font-semibold text-right">Cuota Restante (TM / TCO₂eq)</th>
                             <th class="p-3.5 font-semibold text-right">Acciones (Editar Balance)</th>
                         </tr>
                     </thead>
@@ -105,11 +105,8 @@ function renderModule1(activeImports) {
         balanceRows.forEach(row => {
             const subObj = window.appState.substances.find(s => s.name === row.substance && String(s.module) === '1');
             const tariff = subObj ? subObj.tariff : '---';
-            const used = mod1Imports
-                .filter(i => i.company === row.company && i.type === row.substance)
-                .reduce((acc, cur) => acc + parseFloat(cur.qty || 0), 0);
-            const remaining = row.limit - used;
-            const remClass = remaining < 0 ? 'text-red-600 font-extrabold' : 'text-emerald-700 font-extrabold';
+            const bal = getQuotaBalance(row.company, row.substance, currentFY);
+            const remClass = bal.remTM < 0 ? 'text-red-600 font-extrabold' : 'text-emerald-700 font-extrabold';
             const safeComp = row.company.replace(/'/g, "\\'");
             const safeSub = row.substance.replace(/'/g, "\\'");
 
@@ -118,9 +115,9 @@ function renderModule1(activeImports) {
                     <td class="p-3.5 font-bold text-gray-900">${row.company}</td>
                     <td class="p-3.5 font-semibold text-indigo-700">${row.substance}</td>
                     <td class="p-3.5 font-mono text-xs text-gray-600">${tariff}</td>
-                    <td class="p-3.5 text-right font-bold">${row.limit.toLocaleString('en-US', {minimumFractionDigits: 2})} Ton</td>
-                    <td class="p-3.5 text-right text-amber-700 font-bold">- ${used.toLocaleString('en-US', {minimumFractionDigits: 2})} Ton</td>
-                    <td class="p-3.5 text-right ${remClass}">${remaining.toLocaleString('en-US', {minimumFractionDigits: 2})} Ton</td>
+                    <td class="p-3.5 text-right font-bold">${dualQty(bal.limitTM, bal.limitCO2)}</td>
+                    <td class="p-3.5 text-right text-amber-700 font-bold">${dualQty(bal.usedTM, bal.usedCO2)}</td>
+                    <td class="p-3.5 text-right ${remClass}">${dualQty(bal.remTM, bal.remCO2)}</td>
                     <td class="p-3.5 text-right whitespace-nowrap">
                         ${row.quotaId
                             ? `<button onclick="openEditQuotaModal('${row.quotaId}')" class="px-2.5 py-1 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded font-bold text-xs mr-1.5">Editar Cuota</button>`
@@ -154,7 +151,7 @@ function renderModule1(activeImports) {
                             <th class="p-3.5 font-semibold">Empresa</th>
                             <th class="p-3.5 font-semibold">Gas Regulado</th>
                             <th class="p-3.5 font-semibold">Fracción Arancelaria</th>
-                            <th class="p-3.5 font-semibold text-right">Cantidad (Ton)</th>
+                            <th class="p-3.5 font-semibold text-right">Cantidad (TM / TCO₂eq)</th>
                             <th class="p-3.5 font-semibold text-right">Acciones</th>
                         </tr>
                     </thead>
@@ -179,7 +176,7 @@ function renderModule1(activeImports) {
                     <td class="p-3.5 font-bold text-gray-900">${imp.company}</td>
                     <td class="p-3.5 font-semibold text-indigo-700">${imp.type}</td>
                     <td class="p-3.5 font-mono text-xs text-gray-600">${imp.tariff}</td>
-                    <td class="p-3.5 text-right font-bold text-gray-900">${Number(imp.qty).toLocaleString('en-US', {minimumFractionDigits: 2})} Ton</td>
+                    <td class="p-3.5 text-right font-bold text-gray-900">${dualQty(imp.qty, calcCO2(imp.qty, imp.type))}</td>
                     <td class="p-3.5 text-right whitespace-nowrap">
                         <button onclick="openReceiptById('${imp.id}')" class="text-emerald-600 hover:text-emerald-800 font-bold text-xs mr-2">Recibo/QR</button>
                         <button onclick="openEditImportModal('${imp.id}')" class="text-indigo-600 hover:text-indigo-900 font-bold text-xs mr-2">Editar</button>

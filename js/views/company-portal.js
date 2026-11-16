@@ -40,13 +40,14 @@ function renderCompanyPortal() {
                 ? `<p class="text-xs text-gray-400">Esta empresa no tiene cuotas asignadas en el Módulo 1 para este año fiscal.</p>`
                 : `<div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     ${compQuotas.map(q => {
-                        const used = compImports.filter(i => i.module === '1' && i.type === q.substance).reduce((a,b) => a + parseFloat(b.qty||0), 0);
-                        const rem = parseFloat(q.limit) - used;
+                        const bal = getQuotaBalance(q.company, q.substance, currentFY);
                         return `
                             <div class="p-3.5 rounded-lg border border-gray-200 bg-gray-50">
                                 <div class="font-bold text-indigo-700 text-sm">${q.substance}</div>
-                                <div class="text-xs text-gray-500 mt-1">Asignada: <b>${q.limit} Ton</b> | Usado: <b>${used} Ton</b></div>
-                                <div class="text-sm font-extrabold text-emerald-700 mt-1">Disponible: ${rem.toFixed(2)} Ton</div>
+                                <div class="text-xs text-gray-500 mt-1">Asignada: <b>${fmtNum(bal.limitTM)} Ton</b> (${fmtCO2(bal.limitCO2)})</div>
+                                <div class="text-xs text-gray-500">Usado: <b>${fmtNum(bal.usedTM)} Ton</b> (${fmtCO2(bal.usedCO2)})</div>
+                                <div class="text-sm font-extrabold ${bal.remTM < 0 ? 'text-red-600' : 'text-emerald-700'} mt-1">Disponible: ${fmtNum(bal.remTM)} Ton</div>
+                                <div class="text-xs font-bold text-emerald-700">${fmtCO2(bal.remCO2)}</div>
                             </div>
                         `;
                     }).join('')}
@@ -81,7 +82,7 @@ function renderCompanyPortal() {
                                     <td class="p-3.5 text-xs font-semibold">Módulo ${imp.module}</td>
                                     <td class="p-3.5 font-semibold">${imp.type}</td>
                                     <td class="p-3.5 text-xs">${imp.orderDate}</td>
-                                    <td class="p-3.5 text-right font-bold">${imp.qty} ${imp.module === '3' ? 'Unid.' : 'Ton'}</td>
+                                    <td class="p-3.5 text-right font-bold">${imp.qty} ${imp.module === '3' ? 'Unid.' : `Ton <span class="block text-[11px] text-gray-500">${fmtCO2(calcCO2(imp.qty, imp.type))}</span>`}</td>
                                     <td class="p-3.5 text-right">
                                         <button onclick="openReceiptById('${imp.id}', 'company')" class="px-3 py-1 bg-indigo-600 text-white rounded text-xs font-bold hover:bg-indigo-700">
                                             Ver Ejemplar Empresa

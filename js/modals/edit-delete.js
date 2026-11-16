@@ -3,7 +3,13 @@
 // =========================================================================
 // 11. EDICIÓN Y ELIMINACIÓN (CUOTAS, EMPRESAS, SUSTANCIAS, IMPORTACIONES)
 // =========================================================================
+// Oculta los campos extra del modal de edición (se muestran solo donde aplican).
+window.hideEditExtras = function() {
+    ['edit-modal-limitco2-container', 'edit-modal-gwp-container'].forEach(id => document.getElementById(id).classList.add('hidden'));
+};
+
 window.openEditQuotaModal = function(quotaId) {
+    hideEditExtras();
     const q = window.appState.quotas.find(x => x.id === quotaId);
     if (!q) return;
     document.getElementById('edit-modal-id').value = q.id;
@@ -18,11 +24,14 @@ window.openEditQuotaModal = function(quotaId) {
     document.getElementById('edit-modal-limit-container').classList.remove('hidden');
     document.getElementById('edit-modal-limit-label').innerText = `Límite Anual Autorizado en Toneladas (AF ${q.year})`;
     document.getElementById('edit-modal-limit').value = q.limit;
+    document.getElementById('edit-modal-limitco2-container').classList.remove('hidden');
+    document.getElementById('edit-modal-limitco2').value = (q.limitCO2 === null || q.limitCO2 === undefined) ? '' : q.limitCO2;
 
     document.getElementById('edit-modal').classList.remove('hidden');
 };
 
 window.openEditCompanyModal = function(compId) {
+    hideEditExtras();
     const c = window.appState.companies.find(x => x.id === compId);
     if (!c) return;
     document.getElementById('edit-modal-id').value = c.id;
@@ -50,6 +59,7 @@ window.openEditCompanyModal = function(compId) {
 };
 
 window.openEditSubstanceModal = function(subId) {
+    hideEditExtras();
     const s = window.appState.substances.find(x => x.id === subId);
     if (!s) return;
     document.getElementById('edit-modal-id').value = s.id;
@@ -66,6 +76,7 @@ window.openEditSubstanceModal = function(subId) {
     document.getElementById('edit-modal-tariff').value = s.tariff || '';
 
     document.getElementById('edit-modal-refrigerant').value = s.refrigerant || '';
+    document.getElementById('edit-modal-gwp').value = (s.gwp === null || s.gwp === undefined) ? '' : s.gwp;
     toggleEditRefrigerantField();
 
     document.getElementById('edit-modal-limit-container').classList.add('hidden');
@@ -76,9 +87,11 @@ window.openEditSubstanceModal = function(subId) {
 window.toggleEditRefrigerantField = function() {
     const mod = document.getElementById('edit-modal-module').value;
     document.getElementById('edit-modal-refrigerant-container').classList.toggle('hidden', mod !== '3');
+    document.getElementById('edit-modal-gwp-container').classList.toggle('hidden', mod === '3');
 };
 
 window.openEditYearModal = function(yearId) {
+    hideEditExtras();
     const y = window.appState.fiscalYears.find(x => x.id === yearId);
     if (!y) return;
     document.getElementById('edit-modal-id').value = y.id;
@@ -98,6 +111,7 @@ window.openEditYearModal = function(yearId) {
 };
 
 window.openEditImportModal = function(impId) {
+    hideEditExtras();
     const imp = window.appState.imports.find(x => x.id === impId);
     if (!imp) return;
     document.getElementById('edit-modal-id').value = imp.id;
@@ -131,6 +145,8 @@ window.saveEdit = function() {
         const q = window.appState.quotas.find(x => x.id === id);
         if (q) {
             q.limit = parseFloat(document.getElementById('edit-modal-limit').value || 0);
+            const co2Raw = document.getElementById('edit-modal-limitco2').value;
+            q.limitCO2 = co2Raw === '' ? null : parseFloat(co2Raw);
             logAudit(`Modificó cuota de ${q.company} (${q.substance}) a ${q.limit} Ton`, 'Módulo 1 / Cuotas');
             showToast('Cuota actualizada correctamente');
         }
@@ -182,6 +198,8 @@ window.saveEdit = function() {
             s.module = document.getElementById('edit-modal-module').value;
             s.tariff = document.getElementById('edit-modal-tariff').value.trim();
             s.refrigerant = document.getElementById('edit-modal-refrigerant').value.trim();
+            const gwpRaw = document.getElementById('edit-modal-gwp').value;
+            s.gwp = (s.module === '3' || gwpRaw === '') ? null : parseFloat(gwpRaw);
             logAudit(`Editó sustancia/equipo "${s.name}"`, 'Catálogo');
             showToast('Sustancia actualizada');
         }

@@ -39,6 +39,7 @@ window.openModuleImportModal = function(modNum) {
     document.getElementById('modal_order_date').value = `${fy}-06-15`;
     document.getElementById('modal_arrival_date').value = `${fy}-06-30`;
     document.getElementById('modal_qty').value = '';
+    document.getElementById('modal_qty_co2_text').innerText = '';
 
     // Filtrar empresas que pertenecen a este módulo
     const compSel = document.getElementById('modal_company');
@@ -107,15 +108,27 @@ window.autoFillTariffAndDetails = function(mod) {
     if (mod === '1') {
         const compName = document.getElementById('modal_company').value;
         const fy = calculateFiscalYear(document.getElementById('modal_order_date').value);
-        const qObj = window.appState.quotas.find(q => q.company === compName && q.substance === selectEl.value && Number(q.year) === fy);
-        const used = window.appState.imports
-            .filter(i => i.module === '1' && i.company === compName && i.type === selectEl.value && Number(i.fiscalYear) === fy)
-            .reduce((a, b) => a + parseFloat(b.qty || 0), 0);
-        const rem = (qObj ? parseFloat(qObj.limit) : 0) - used;
-        document.getElementById('mod1_quota_available_text').innerText = `Saldo disponible antes de esta orden: ${rem.toFixed(2)} Ton`;
+        const bal = getQuotaBalance(compName, selectEl.value, fy);
+        document.getElementById('mod1_quota_available_text').innerText =
+            `Cuota restante antes de esta orden: ${fmtNum(bal.remTM)} Ton (${fmtCO2(bal.remCO2)})`;
     } else if (mod === '3' && subObj && subObj.refrigerant) {
         document.getElementById('modal_contained_gas').value = subObj.refrigerant;
     }
+    updateQtyCO2Preview();
+};
+
+// Muestra el equivalente en TCO2eq de la cantidad escrita (Módulos 1 y 2).
+window.updateQtyCO2Preview = function() {
+    const mod = document.getElementById('modal_current_module').value;
+    const el = document.getElementById('modal_qty_co2_text');
+    if (!el) return;
+    const sel = document.getElementById(`modal_type_select_mod${mod}`);
+    const qty = parseFloat(document.getElementById('modal_qty').value);
+    if (mod === '3' || !sel || !sel.value || isNaN(qty)) { el.innerText = ''; return; }
+    const co2 = calcCO2(qty, sel.value);
+    el.innerText = co2 === null
+        ? 'Esta sustancia no tiene factor TCO₂eq (se captura en el Catálogo de Sustancias).'
+        : `Equivale a ${fmtCO2(co2)}`;
 };
 
 window.handleImportSubmit = function(e) {

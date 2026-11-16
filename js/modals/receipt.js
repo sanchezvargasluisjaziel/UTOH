@@ -15,6 +15,9 @@ window.openReceiptById = function(impId, mode = 'both') {
         : imp.type;
     document.getElementById('rec_tariff').innerText = imp.tariff || 'S/N';
     document.getElementById('rec_qty').innerText = `${imp.qty} ${imp.module === '3' ? 'Unidades' : 'Toneladas'}`;
+    const co2Row = document.getElementById('rec_qty_co2_row');
+    co2Row.classList.toggle('hidden', String(imp.module) === '3');
+    document.getElementById('rec_qty_co2').innerText = fmtCO2(calcCO2(imp.qty, imp.type));
     document.getElementById('rec_order_date').innerText = `${imp.orderDate} (AF ${imp.fiscalYear})`;
     document.getElementById('rec_arrival_date').innerText = imp.arrivalDate || 'Pendiente';
     document.getElementById('rec_user').innerText = imp.registeredBy || 'Admin 1 (Sistema)';
@@ -24,14 +27,13 @@ window.openReceiptById = function(impId, mode = 'both') {
     const qBreakdown = document.getElementById('rec_quota_breakdown');
     if (String(imp.module) === '1') {
         qBreakdown.classList.remove('hidden');
-        const qObj = window.appState.quotas.find(q => q.company === imp.company && q.substance === imp.type && Number(q.year) === Number(imp.fiscalYear));
-        const limit = qObj ? parseFloat(qObj.limit) : 0;
-        const used = window.appState.imports
-            .filter(i => i.module === '1' && i.company === imp.company && i.type === imp.type && Number(i.fiscalYear) === Number(imp.fiscalYear))
-            .reduce((a, b) => a + parseFloat(b.qty || 0), 0);
-        document.getElementById('rec_quota_limit').innerText = `${limit.toFixed(2)} Ton`;
-        document.getElementById('rec_quota_used').innerText = `${used.toFixed(2)} Ton`;
-        document.getElementById('rec_quota_remaining').innerText = `${(limit - used).toFixed(2)} Ton`;
+        const bal = getQuotaBalance(imp.company, imp.type, imp.fiscalYear);
+        document.getElementById('rec_quota_limit').innerText = `${fmtNum(bal.limitTM)} Ton`;
+        document.getElementById('rec_quota_used').innerText = `${fmtNum(bal.usedTM)} Ton`;
+        document.getElementById('rec_quota_remaining').innerText = `${fmtNum(bal.remTM)} Ton`;
+        document.getElementById('rec_quota_limit_co2').innerText = fmtCO2(bal.limitCO2);
+        document.getElementById('rec_quota_used_co2').innerText = fmtCO2(bal.usedCO2);
+        document.getElementById('rec_quota_remaining_co2').innerText = fmtCO2(bal.remCO2);
     } else {
         qBreakdown.classList.add('hidden');
     }
@@ -48,6 +50,7 @@ window.openReceiptById = function(impId, mode = 'both') {
                 sustancia: imp.type,
                 arancel: imp.tariff,
                 cantidad: imp.qty,
+                tco2eq: calcCO2(imp.qty, imp.type),
                 orden: imp.orderDate,
                 af: imp.fiscalYear
             }),
