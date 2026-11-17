@@ -14,8 +14,8 @@ function renderModule3(activeImports) {
     let html = `
         <div class="mb-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
-                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-800">MÓDULO 3 • EQUIPOS Y APARATOS (UNIDADES)</span>
-                <h2 class="text-2xl font-bold text-gray-800 mt-1">Equipos con Gases Refrigerantes (AF ${currentFY})</h2>
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-800">EQUIPOS Y APARATOS • UNIDADES</span>
+                <h2 class="text-2xl font-bold text-gray-800 mt-1">${moduleName('3')} (AF ${currentFY})</h2>
                 <p class="text-sm text-gray-500">Medición exclusiva en Unidades de aparatos con gases regulados o no regulados.</p>
             </div>
             <div class="flex flex-wrap items-center gap-2">
@@ -23,10 +23,10 @@ function renderModule3(activeImports) {
                     + Agregar Empresa
                 </button>
                 <button onclick="clearModuleData('3')" class="px-3 py-2 bg-white border border-red-200 hover:bg-red-50 text-red-600 rounded-lg text-xs font-bold">
-                    Vaciar Módulo 3
+                    Vaciar Movimientos
                 </button>
                 <button onclick="openModuleImportModal('3')" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-bold shadow-sm">
-                    + Registrar Importación (Módulo 3)
+                    + Registrar Importación
                 </button>
             </div>
         </div>
@@ -36,7 +36,7 @@ function renderModule3(activeImports) {
         <!-- Empresas Activas en Módulo 3 -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
             <div class="px-5 py-3.5 border-b border-gray-100 flex justify-between items-center bg-purple-50/50">
-                <h3 class="font-bold text-gray-800 text-sm">Empresas Importadoras de Equipos en Módulo 3 (AF ${currentFY})</h3>
+                <h3 class="font-bold text-gray-800 text-sm">Empresas Importadoras de Equipos (AF ${currentFY})</h3>
                 <span class="text-xs font-bold text-purple-700">${mod3Companies.length} empresas</span>
             </div>
             <div class="overflow-x-auto">
@@ -53,7 +53,7 @@ function renderModule3(activeImports) {
     `;
 
     if (mod3Companies.length === 0) {
-        html += `<tr><td colspan="4" class="p-6 text-center text-gray-400">No hay empresas registradas para el Módulo 3.</td></tr>`;
+        html += `<tr><td colspan="4" class="p-6 text-center text-gray-400">No hay empresas registradas en este apartado.</td></tr>`;
     } else {
         mod3Companies.forEach(c => {
             const mod3Subs = (c.allowedSubstances || []).filter(sName => {
@@ -67,7 +67,7 @@ function renderModule3(activeImports) {
             html += `
                 <tr class="hover:bg-gray-50">
                     <td class="p-3.5 font-bold text-gray-900">${escapeHtml(c.name)}</td>
-                    <td class="p-3.5 text-xs text-gray-600">${mod3Subs.length > 0 ? mod3Subs.join(', ') : 'Todos los equipos del catálogo Módulo 3'}</td>
+                    <td class="p-3.5 text-xs text-gray-600">${mod3Subs.length > 0 ? mod3Subs.join(', ') : 'Todos los equipos del catálogo'}</td>
                     <td class="p-3.5 text-right font-extrabold text-purple-700">${totalUnits.toLocaleString('en-US')} Unidades</td>
                     <td class="p-3.5 text-right whitespace-nowrap">
                         <button onclick="openEditCompanyModal('${c.id}')" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded font-bold text-xs">Editar Empresa</button>
@@ -86,7 +86,7 @@ function renderModule3(activeImports) {
         <!-- Movimientos Detallados Módulo 3 -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="px-5 py-3.5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                <h3 class="font-bold text-gray-800 text-sm">Movimientos de Importación Registrados — Módulo 3</h3>
+                <h3 class="font-bold text-gray-800 text-sm">Movimientos de Importación Registrados</h3>
                 <span class="text-xs font-semibold text-gray-500">${mod3Imports.length} movimientos</span>
             </div>
             <div class="overflow-x-auto">
@@ -107,7 +107,7 @@ function renderModule3(activeImports) {
     `;
 
     if (mod3Imports.length === 0) {
-        html += `<tr><td colspan="8" class="p-8 text-center text-gray-400">Sin movimientos registrados en el Módulo 3.</td></tr>`;
+        html += `<tr><td colspan="8" class="p-8 text-center text-gray-400">Sin movimientos registrados en este apartado.</td></tr>`;
     } else {
         mod3Imports.forEach(imp => {
             html += `

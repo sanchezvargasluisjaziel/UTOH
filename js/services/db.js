@@ -21,7 +21,7 @@ window.saveCompanyToDB = function(name, rtn, modules, allowedSubstances = []) {
         allowedSubstances: allowedSubstances
     });
     window.appState.selectedPortalCompany = cleanName;
-    logAudit(`Dio de alta la empresa "${cleanName}" (RTN ${cleanRTN}) en Módulos [${modules.join(', ')}]`, 'Empresas');
+    logAudit(`Dio de alta la empresa "${cleanName}" (RTN ${cleanRTN}) en: ${modules.map(moduleName).join(', ')}`, 'Empresas');
     showToast(`Empresa "${cleanName}" registrada`);
     window.renderAll();
     return true;

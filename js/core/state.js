@@ -14,7 +14,7 @@ window.appState = {
     quotas: [...window.DEMO_QUOTAS],
     imports: [...window.DEMO_IMPORTS],
     auditLogs: [
-        { id: "a1", timestamp: "2026-12-28 14:15", user: "Admin 2 (Aduana)", module: "Módulo 1", action: "Registró orden [UTOH-2026-M1-592044] (2026-12-28, llega 2027-01-11 -> Contabilizada en AF 2026): 300 Ton de R-410A para FrioMax S.A." }
+        { id: "a1", timestamp: "2026-12-28 14:15", user: "Admin 2 (Aduana)", module: "Sustancias reguladas sujetas a cuota", action: "Registró orden [UTOH-2026-M1-592044] (2026-12-28, llega 2027-01-11 -> Contabilizada en AF 2026): 300 Ton de R-410A para FrioMax S.A." }
     ]
 };
 

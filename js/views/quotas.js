@@ -24,7 +24,7 @@ function renderQuotas() {
                     + Agregar Empresa
                 </button>
                 <button onclick="switchTab('mod1')" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow-sm">
-                    Ver Módulo 1 →
+                    Ver Balance de Cuotas →
                 </button>
             </div>
         </div>
@@ -35,7 +35,7 @@ function renderQuotas() {
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 mb-6">
             <form onsubmit="handleQuotaSubmit(event)" class="grid grid-cols-1 sm:grid-cols-5 gap-3 items-end">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">Empresa Importadora (Módulo 1)</label>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Empresa Importadora (sujeta a cuota)</label>
                     <select id="quota_company" required onchange="updateQuotaSubstanceSelect()" class="w-full p-2.5 border border-gray-300 rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-indigo-500">
                         <option value="" disabled selected>Seleccione empresa...</option>
                         ${mod1Companies.map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('')}

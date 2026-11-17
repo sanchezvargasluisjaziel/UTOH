@@ -45,13 +45,13 @@ function updateTopRegisterButton() {
     if (!btn) return;
     const tab = window.appState.activeTab;
     if (tab === 'mod1') {
-        btn.innerText = '+ Registrar en Módulo 1';
+        btn.innerText = '+ Registrar Importación';
         btn.className = 'px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow-sm transition-colors flex items-center';
     } else if (tab === 'mod2') {
-        btn.innerText = '+ Registrar en Módulo 2';
+        btn.innerText = '+ Registrar Importación';
         btn.className = 'px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition-colors flex items-center';
     } else if (tab === 'mod3') {
-        btn.innerText = '+ Registrar en Módulo 3';
+        btn.innerText = '+ Registrar Importación';
         btn.className = 'px-3.5 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-bold shadow-sm transition-colors flex items-center';
     } else {
         btn.innerText = '+ Registrar Importación';

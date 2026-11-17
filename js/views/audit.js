@@ -15,7 +15,7 @@ function renderAudit() {
                     <tr class="bg-gray-50 border-b text-xs uppercase text-gray-500">
                         <th class="p-3.5">Fecha / Hora</th>
                         <th class="p-3.5">Usuario / Administrador</th>
-                        <th class="p-3.5">Módulo</th>
+                        <th class="p-3.5">Apartado</th>
                         <th class="p-3.5">Movimiento Registrado</th>
                     </tr>
                 </thead>

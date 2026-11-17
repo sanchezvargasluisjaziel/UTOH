@@ -9,7 +9,7 @@ window.openReceiptById = function(impId, mode = 'both') {
 
     document.getElementById('rec_tracking_number').innerText = imp.trackingNumber || 'UTOH-2026-M1-000000';
     document.getElementById('rec_company').innerText = imp.company;
-    document.getElementById('rec_module').innerText = `Módulo ${imp.module} (AF ${imp.fiscalYear})`;
+    document.getElementById('rec_module').innerText = `${moduleName(imp.module)} (AF ${imp.fiscalYear})`;
     document.getElementById('rec_substance').innerText = imp.module === '3' && imp.productDescription
         ? `${imp.type} - ${imp.productDescription}`
         : imp.type;

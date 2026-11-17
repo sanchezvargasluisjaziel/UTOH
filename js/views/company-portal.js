@@ -22,7 +22,7 @@ function renderCompanyPortal() {
                 <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-300">Portal de Monitoreo Personal y Comprobantes</span>
                 <h2 class="text-xl font-bold mt-0.5">${escapeHtml(compObj.name)} — Año Fiscal ${currentFY}</h2>
                 <div class="flex flex-wrap gap-1.5 mt-2">
-                    ${(compObj.modules || ['1']).map(m => `<span class="px-2 py-0.5 bg-white/10 rounded text-xs font-semibold">Módulo ${m}</span>`).join('')}
+                    ${(compObj.modules || ['1']).map(m => `<span class="px-2 py-0.5 bg-white/10 rounded text-xs font-semibold">${moduleName(m)}</span>`).join('')}
                 </div>
             </div>
             <div class="flex items-center gap-2">
@@ -35,9 +35,9 @@ function renderCompanyPortal() {
 
         <!-- Balance de Cuotas de la Empresa -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 mb-6">
-            <h3 class="font-bold text-gray-800 text-sm mb-3">Estado de Cuotas Autorizadas (Módulo 1 - AF ${currentFY})</h3>
+            <h3 class="font-bold text-gray-800 text-sm mb-3">Estado de Cuotas Autorizadas (AF ${currentFY})</h3>
             ${compQuotas.length === 0
-                ? `<p class="text-xs text-gray-400">Esta empresa no tiene cuotas asignadas en el Módulo 1 para este año fiscal.</p>`
+                ? `<p class="text-xs text-gray-400">Esta empresa no tiene cuotas asignadas para este año fiscal.</p>`
                 : `<div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     ${compQuotas.map(q => {
                         const bal = getQuotaBalance(q.company, q.substance, currentFY);
@@ -66,7 +66,7 @@ function renderCompanyPortal() {
                     <thead>
                         <tr class="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500">
                             <th class="p-3.5 font-semibold">Folio Oficial</th>
-                            <th class="p-3.5 font-semibold">Módulo</th>
+                            <th class="p-3.5 font-semibold">Apartado</th>
                             <th class="p-3.5 font-semibold">Sustancia / Equipo</th>
                             <th class="p-3.5 font-semibold">Fecha Orden</th>
                             <th class="p-3.5 font-semibold text-right">Cantidad</th>
@@ -79,7 +79,7 @@ function renderCompanyPortal() {
                             : compImports.map(imp => `
                                 <tr class="hover:bg-gray-50">
                                     <td class="p-3.5 font-mono text-xs font-bold text-indigo-700">${escapeHtml(imp.trackingNumber)}</td>
-                                    <td class="p-3.5 text-xs font-semibold">Módulo ${imp.module}</td>
+                                    <td class="p-3.5 text-xs font-semibold">${moduleName(imp.module)}</td>
                                     <td class="p-3.5 font-semibold">${escapeHtml(imp.type)}</td>
                                     <td class="p-3.5 text-xs">${escapeHtml(imp.orderDate)}</td>
                                     <td class="p-3.5 text-right font-bold">${imp.qty} ${imp.module === '3' ? 'Unid.' : `Ton <span class="block text-[11px] text-gray-500">${fmtCO2(calcCO2(imp.qty, imp.type))}</span>`}</td>

@@ -40,17 +40,17 @@
 
                 <button onclick="switchTab('mod1')" id="tab-mod1" class="tab-inactive flex items-center px-6 py-3 text-left w-full transition-colors duration-150 font-medium text-sm">
                     <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>
-                    Módulo 1: Regulados
+                    Sustancias reguladas sujetas a cuota
                 </button>
 
                 <button onclick="switchTab('mod2')" id="tab-mod2" class="tab-inactive flex items-center px-6 py-3 text-left w-full transition-colors duration-150 font-medium text-sm">
                     <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
-                    Módulo 2: No Regulados
+                    Sustancias reguladas sin cuota
                 </button>
 
                 <button onclick="switchTab('mod3')" id="tab-mod3" class="tab-inactive flex items-center px-6 py-3 text-left w-full transition-colors duration-150 font-medium text-sm">
                     <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
-                    Módulo 3: Equipos/Aparatos
+                    Equipos y aparatos regulados
                 </button>
 
                 <div class="my-1 border-t border-gray-100"></div>
@@ -90,7 +90,7 @@
         <div class="p-4 border-t border-gray-100 bg-gray-50 space-y-2">
             <button onclick="clearAllDemoDataToBlank()" class="w-full py-2 px-3 bg-white hover:bg-red-50 text-red-600 border border-red-200 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center">
                 <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                Dejar Módulos en Blanco
+                Dejar el Sistema en Blanco
             </button>
             <button onclick="resetToDemoData()" class="w-full py-2 px-3 bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 rounded-lg text-xs font-semibold transition-colors">
                 Restaurar datos de demostración
@@ -111,9 +111,9 @@
             <div class="md:hidden flex items-center shrink-0">
                 <select onchange="switchTab(this.value)" id="mobile-nav-select" class="text-xs font-semibold border border-gray-300 rounded-lg p-2 bg-gray-50 text-indigo-700">
                     <option value="quotas">Asignación de Cuota</option>
-                    <option value="mod1">Módulo 1: Regulados</option>
-                    <option value="mod2">Módulo 2: No Regulados</option>
-                    <option value="mod3">Módulo 3: Equipos</option>
+                    <option value="mod1">Sustancias reguladas sujetas a cuota</option>
+                    <option value="mod2">Sustancias reguladas sin cuota</option>
+                    <option value="mod3">Equipos y aparatos regulados</option>
                     <option value="portal">Vista de Empresa</option>
                     <option value="companies">Catálogo de Empresas</option>
                     <option value="substances">Catálogo de Sustancias</option>
@@ -207,7 +207,7 @@
                     </div>
                 </div>
 
-                <!-- Selector de Empresa filtrado por el Módulo activo -->
+                <!-- Selector de Empresa filtrado por el apartado activo -->
                 <div>
                     <div class="flex justify-between items-center mb-1">
                         <label class="block text-xs font-bold text-gray-700" id="modal_company_label">Empresa Importadora <span class="text-red-500">*</span></label>
@@ -228,7 +228,7 @@
                 <!-- Campos Exclusivos MÓDULO 2 (Solo gases no regulados) -->
                 <div id="fields-mod2" class="hidden space-y-3">
                     <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1">Gas Refrigerante No Regulado <span class="text-red-500">*</span></label>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Sustancia Regulada sin Cuota <span class="text-red-500">*</span></label>
                         <select id="modal_type_select_mod2" onchange="autoFillTariffAndDetails('2')" class="w-full p-2.5 border border-gray-300 rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-emerald-500"></select>
                     </div>
                 </div>
@@ -281,7 +281,7 @@
         </div>
     </div>
 
-    <!-- 2. MODAL RÁPIDO PARA AGREGAR EMPRESA DESDE CUALQUIER MÓDULO -->
+    <!-- 2. MODAL RÁPIDO PARA AGREGAR EMPRESA DESDE CUALQUIER APARTADO -->
     <div id="quick-company-modal" class="fixed inset-0 bg-gray-900 bg-opacity-60 hidden z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[88vh] flex flex-col overflow-hidden text-left">
             <div class="px-5 py-3.5 border-b border-gray-100 flex justify-between items-center bg-gray-50 shrink-0">
@@ -300,27 +300,27 @@
                     <input type="text" id="qc_rtn" required maxlength="30" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-mono" placeholder="Ej. 0801-1999-123456">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-gray-700 mb-1.5">Módulos en los que opera <span class="text-red-500">*</span></label>
-                    <div class="grid grid-cols-3 gap-2 bg-gray-50 p-2.5 rounded-lg border border-gray-200 text-xs">
+                    <label class="block text-xs font-bold text-gray-700 mb-1.5">Apartados en los que opera <span class="text-red-500">*</span></label>
+                    <div class="grid grid-cols-1 gap-2 bg-gray-50 p-2.5 rounded-lg border border-gray-200 text-xs">
                         <label class="flex items-center space-x-1.5 cursor-pointer">
                             <input type="checkbox" id="qc_mod1" value="1" onchange="renderDynamicSubstancePicker('qc')" class="rounded text-indigo-600 h-4 w-4">
-                            <span class="font-semibold text-gray-800">Módulo 1</span>
+                            <span class="font-semibold text-gray-800">Sustancias reguladas sujetas a cuota</span>
                         </label>
                         <label class="flex items-center space-x-1.5 cursor-pointer">
                             <input type="checkbox" id="qc_mod2" value="2" onchange="renderDynamicSubstancePicker('qc')" class="rounded text-emerald-600 h-4 w-4">
-                            <span class="font-semibold text-gray-800">Módulo 2</span>
+                            <span class="font-semibold text-gray-800">Sustancias reguladas sin cuota</span>
                         </label>
                         <label class="flex items-center space-x-1.5 cursor-pointer">
                             <input type="checkbox" id="qc_mod3" value="3" onchange="renderDynamicSubstancePicker('qc')" class="rounded text-purple-600 h-4 w-4">
-                            <span class="font-semibold text-gray-800">Módulo 3</span>
+                            <span class="font-semibold text-gray-800">Equipos y aparatos regulados</span>
                         </label>
                     </div>
                 </div>
 
-                <!-- Despliegue compacto de sustancias según los módulos seleccionados -->
+                <!-- Despliegue compacto de sustancias según los apartados seleccionados -->
                 <div class="border border-gray-200 bg-gray-50/60 rounded-lg p-3 space-y-2">
                     <div class="flex items-center justify-between gap-2">
-                        <label class="text-xs font-bold text-gray-700">Sustancias / Equipos del Módulo</label>
+                        <label class="text-xs font-bold text-gray-700">Sustancias / Equipos Autorizados</label>
                         <div class="flex items-center gap-2">
                             <span id="qc_sub_count_badge" class="text-[11px] font-bold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full">0 seleccionadas</span>
                             <button type="button" onclick="toggleAllVisibleSubstances('qc', true)" class="text-[11px] text-indigo-600 hover:underline font-semibold">Todas</button>
@@ -364,25 +364,25 @@
 
                 <div id="edit-modal-company-extra" class="hidden space-y-3">
                     <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1">Módulos Autorizados</label>
-                        <div class="grid grid-cols-3 gap-2 bg-gray-50 p-2.5 rounded-lg border border-gray-200 text-xs">
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Apartados Autorizados</label>
+                        <div class="grid grid-cols-1 gap-2 bg-gray-50 p-2.5 rounded-lg border border-gray-200 text-xs">
                             <label class="flex items-center space-x-1.5 cursor-pointer">
                                 <input type="checkbox" id="edit-comp-mod1" value="1" onchange="renderDynamicSubstancePicker('edit')" class="rounded text-indigo-600 h-4 w-4">
-                                <span class="font-semibold">Módulo 1</span>
+                                <span class="font-semibold">Sustancias reguladas sujetas a cuota</span>
                             </label>
                             <label class="flex items-center space-x-1.5 cursor-pointer">
                                 <input type="checkbox" id="edit-comp-mod2" value="2" onchange="renderDynamicSubstancePicker('edit')" class="rounded text-emerald-600 h-4 w-4">
-                                <span class="font-semibold">Módulo 2</span>
+                                <span class="font-semibold">Sustancias reguladas sin cuota</span>
                             </label>
                             <label class="flex items-center space-x-1.5 cursor-pointer">
                                 <input type="checkbox" id="edit-comp-mod3" value="3" onchange="renderDynamicSubstancePicker('edit')" class="rounded text-purple-600 h-4 w-4">
-                                <span class="font-semibold">Módulo 3</span>
+                                <span class="font-semibold">Equipos y aparatos regulados</span>
                             </label>
                         </div>
                     </div>
                     <div class="border border-gray-200 bg-gray-50/60 rounded-lg p-3 space-y-2">
                         <div class="flex items-center justify-between gap-2">
-                            <span class="text-xs font-bold text-gray-800">Sustancias / Equipos del Módulo</span>
+                            <span class="text-xs font-bold text-gray-800">Sustancias / Equipos Autorizados</span>
                             <div class="flex items-center gap-2">
                                 <span id="edit_sub_count_badge" class="text-[11px] font-bold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full">0 seleccionadas</span>
                                 <button type="button" onclick="toggleAllVisibleSubstances('edit', true)" class="text-[11px] text-indigo-600 hover:underline font-semibold">Todas</button>
@@ -397,11 +397,11 @@
                 <!-- Campos para editar Sustancia / Equipo -->
                 <div id="edit-modal-module-container" class="hidden space-y-3">
                     <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1">Clasificación / Módulo</label>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Clasificación</label>
                         <select id="edit-modal-module" onchange="toggleEditRefrigerantField()" class="w-full p-2 border border-gray-300 rounded-lg text-sm bg-white outline-none">
-                            <option value="1">Módulo 1: Gas Regulado (Protocolo de Montreal)</option>
-                            <option value="2">Módulo 2: Gas Refrigerante No Regulado</option>
-                            <option value="3">Módulo 3: Equipo / Aparato con Refrigerante</option>
+                            <option value="1">Sustancia regulada sujeta a cuota</option>
+                            <option value="2">Sustancia regulada sin cuota</option>
+                            <option value="3">Equipo o aparato regulado</option>
                         </select>
                     </div>
                     <div>
@@ -411,7 +411,7 @@
                 </div>
 
                 <div id="edit-modal-refrigerant-container" class="hidden">
-                    <label class="block text-xs font-bold text-gray-700 mb-1">Refrigerante que usa el Equipo (Módulo 3)</label>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">Refrigerante que usa el Equipo</label>
                     <input type="text" id="edit-modal-refrigerant" class="w-full p-2 border border-gray-300 rounded-lg text-sm outline-none" placeholder="Ej. R-410A / R-600a">
                 </div>
 
@@ -522,7 +522,7 @@
                             <span class="font-bold text-gray-900 text-right" id="rec_company">---</span>
                         </div>
                         <div class="flex justify-between border-b border-gray-200 pb-1.5">
-                            <span class="text-gray-500">Módulo de Control:</span>
+                            <span class="text-gray-500">Apartado de Control:</span>
                             <span class="font-semibold text-indigo-700 text-right" id="rec_module">---</span>
                         </div>
                         <div class="flex justify-between border-b border-gray-200 pb-1.5">
@@ -552,9 +552,9 @@
                     </div>
                 </div>
 
-                <!-- Desglose de Resta de Cuota (Exclusivo Módulo 1) -->
+                <!-- Desglose de Resta de Cuota (solo sustancias sujetas a cuota) -->
                 <div id="rec_quota_breakdown" class="hidden bg-indigo-50 border border-indigo-200 rounded-xl p-3.5">
-                    <div class="text-xs font-bold text-indigo-950 mb-2">Impacto en Cuota Anual Autorizada (Módulo 1)</div>
+                    <div class="text-xs font-bold text-indigo-950 mb-2">Impacto en Cuota Anual Autorizada</div>
                     <div class="grid grid-cols-3 gap-2 text-center text-xs">
                         <div class="bg-white p-2 rounded-lg border border-indigo-100">
                             <div class="text-[10px] text-gray-500">Cuota Asignada</div>

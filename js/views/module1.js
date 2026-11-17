@@ -57,8 +57,8 @@ function renderModule1(activeImports) {
     let html = `
         <div class="mb-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
-                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-100 text-indigo-800">MÓDULO 1 • PROTOCOLO DE MONTREAL</span>
-                <h2 class="text-2xl font-bold text-gray-800 mt-1">Gases Refrigerantes Regulados (AF ${currentFY})</h2>
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-100 text-indigo-800">PROTOCOLO DE MONTREAL • CON CUOTA</span>
+                <h2 class="text-2xl font-bold text-gray-800 mt-1">${moduleName('1')} (AF ${currentFY})</h2>
                 <p class="text-sm text-gray-500">Control de cuota permitida menos cantidad importada (en Toneladas) y fracción arancelaria.</p>
             </div>
             <div class="flex flex-wrap items-center gap-2">
@@ -66,10 +66,10 @@ function renderModule1(activeImports) {
                     + Agregar Empresa
                 </button>
                 <button onclick="clearModuleData('1')" class="px-3 py-2 bg-white border border-red-200 hover:bg-red-50 text-red-600 rounded-lg text-xs font-bold">
-                    Vaciar Módulo 1
+                    Vaciar Movimientos
                 </button>
                 <button onclick="openModuleImportModal('1')" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow-sm">
-                    + Registrar Importación (Módulo 1)
+                    + Registrar Importación
                 </button>
             </div>
         </div>
@@ -103,7 +103,7 @@ function renderModule1(activeImports) {
     `;
 
     if (balanceRows.length === 0) {
-        html += `<tr><td colspan="7" class="p-8 text-center text-gray-400">No hay empresas o cuotas en el Módulo 1. Use "+ Agregar Empresa" para comenzar.</td></tr>`;
+        html += `<tr><td colspan="7" class="p-8 text-center text-gray-400">No hay empresas o cuotas registradas. Use "+ Agregar Empresa" para comenzar.</td></tr>`;
     } else {
         balanceRows.forEach(row => {
             const subObj = window.appState.substances.find(s => s.name === row.substance && String(s.module) === '1');
@@ -142,7 +142,7 @@ function renderModule1(activeImports) {
         <!-- Tabla 2: Historial de Órdenes de Importación del Módulo 1 -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="px-5 py-3.5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                <h3 class="font-bold text-gray-800 text-sm">Movimientos de Importación Registrados — Módulo 1 (AF ${currentFY} · ${monthLabel('mod1')})</h3>
+                <h3 class="font-bold text-gray-800 text-sm">Movimientos de Importación Registrados (AF ${currentFY} · ${monthLabel('mod1')})</h3>
                 <span class="text-xs font-semibold text-gray-500">${mod1Imports.length} movimientos</span>
             </div>
             <div class="overflow-x-auto">
@@ -162,7 +162,7 @@ function renderModule1(activeImports) {
     `;
 
     if (mod1Imports.length === 0) {
-        html += `<tr><td colspan="7" class="p-8 text-center text-gray-400">No hay órdenes de importación registradas en el Módulo 1 para este año fiscal.</td></tr>`;
+        html += `<tr><td colspan="7" class="p-8 text-center text-gray-400">No hay órdenes de importación registradas para este año fiscal.</td></tr>`;
     } else {
         mod1Imports.forEach(imp => {
             html += `
@@ -216,8 +216,8 @@ window.quickAssignQuotaFromMod1 = function(companyName, substanceName) {
 window.deleteBalanceCompanyRowMod1 = function(companyName, substanceName, quotaId) {
     const currentFY = getActiveFiscalYear();
     customConfirm(
-        'Eliminar del Balance (Módulo 1)',
-        `¿Desea eliminar a "${companyName}" (${substanceName}) del Balance del Módulo 1?`,
+        'Eliminar del Balance de Cuotas',
+        `¿Desea eliminar a "${companyName}" (${substanceName}) del Balance de cuotas?`,
         () => {
             // 1. Eliminar la cuota si existe
             if (quotaId) {
@@ -252,9 +252,9 @@ window.deleteBalanceCompanyRowMod1 = function(companyName, substanceName, quotaI
                 }
             }
 
-            logAudit(`Eliminó del Balance del Módulo 1 a "${companyName}" (${substanceName})`, 'Módulo 1');
+            logAudit(`Eliminó del Balance de cuotas a "${companyName}" (${substanceName})`, moduleName('1'));
             window.renderAll();
-            showToast(`Eliminado del Balance del Módulo 1: ${companyName}`);
+            showToast(`Eliminado del Balance de cuotas: ${companyName}`);
         }
     );
 };

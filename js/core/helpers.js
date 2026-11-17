@@ -12,6 +12,18 @@ window.calculateFiscalYear = function(orderDateString) {
     return year;
 };
 
+// Nombres oficiales de los tres apartados (antes "Módulo 1/2/3"). El número sigue siendo la clave interna.
+window.MODULE_NAMES = {
+    '1': 'Sustancias reguladas sujetas a cuota',
+    '2': 'Sustancias reguladas sin cuota',
+    '3': 'Equipos y aparatos regulados'
+};
+// Versión corta para etiquetas pequeñas (tabla de empresas); el nombre completo va en el title.
+window.MODULE_SHORT = { '1': 'Con cuota', '2': 'Sin cuota', '3': 'Equipos' };
+window.moduleName = function(mod) {
+    return window.MODULE_NAMES[String(mod)] || 'Sistema';
+};
+
 window.generateTrackingFolio = function(fy, mod) {
     const randomDigits = Math.floor(100000 + Math.random() * 900000);
     return `UTOH-${fy}-M${mod}-${randomDigits}`;
