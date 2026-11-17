@@ -22,15 +22,15 @@ window.openModuleImportModal = function(modNum) {
     const qtyInput = document.getElementById('modal_qty');
 
     if (mod === '1') {
-        titleEl.innerText = 'Registrar Importación — Módulo 1 (Regulados)';
+        titleEl.innerText = `Registrar Importación — ${moduleName('1')}`;
         qtyLabel.innerHTML = 'Cantidad a Importar (Toneladas) <span class="text-red-500">*</span>';
         qtyInput.step = '0.01';
     } else if (mod === '2') {
-        titleEl.innerText = 'Registrar Importación — Módulo 2 (No Regulados)';
+        titleEl.innerText = `Registrar Importación — ${moduleName('2')}`;
         qtyLabel.innerHTML = 'Cantidad a Importar (Toneladas) <span class="text-red-500">*</span>';
         qtyInput.step = '0.01';
     } else {
-        titleEl.innerText = 'Registrar Importación — Módulo 3 (Equipos / Unidades)';
+        titleEl.innerText = `Registrar Importación — ${moduleName('3')}`;
         qtyLabel.innerHTML = 'Cantidad de Aparatos (Unidades) <span class="text-red-500">*</span>';
         qtyInput.step = '1';
     }
@@ -46,7 +46,7 @@ window.openModuleImportModal = function(modNum) {
     const modCompanies = window.appState.companies.filter(c => !Array.isArray(c.modules) || c.modules.includes(mod));
     compSel.innerHTML = modCompanies.length > 0
         ? modCompanies.map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('')
-        : `<option value="" disabled selected>Agregue una empresa al Módulo ${mod}...</option>`;
+        : `<option value="" disabled selected>Agregue una empresa a este apartado...</option>`;
 
     onOrderDateOrCompanyChange();
     document.getElementById('import-modal').classList.remove('hidden');
@@ -73,7 +73,7 @@ window.onOrderDateOrCompanyChange = function() {
         if (quotas.length === 0) {
             sel1.innerHTML = `<option value="" disabled selected>Sin cuota asignada en AF ${computedFY}</option>`;
             document.getElementById('modal_tariff').value = '';
-            document.getElementById('mod1_quota_available_text').innerText = 'Asigne primero una cuota a esta empresa en Asignación de Cuota o en el Balance del Módulo 1.';
+            document.getElementById('mod1_quota_available_text').innerText = 'Asigne primero una cuota a esta empresa en Asignación de Cuota o en el Balance de cuotas.';
         } else {
             sel1.innerHTML = quotas.map(q => `<option value="${escapeHtml(q.substance)}">${escapeHtml(q.substance)} (Cuota: ${q.limit} Ton)</option>`).join('');
             autoFillTariffAndDetails('1');
@@ -184,7 +184,7 @@ window.handleImportSubmit = function(e) {
     };
 
     window.appState.imports.unshift(newImp);
-    logAudit(`Registró importación [${trackingNumber}] en Módulo ${mod}: ${newImp.qty} ${mod === '3' ? 'Unidades' : 'Ton'} de ${substanceOrType} para ${company} (AF ${fiscalYear})`, `Módulo ${mod}`);
+    logAudit(`Registró importación [${trackingNumber}] en "${moduleName(mod)}": ${newImp.qty} ${mod === '3' ? 'Unidades' : 'Ton'} de ${substanceOrType} para ${company} (AF ${fiscalYear})`, moduleName(mod));
 
     closeModal();
     document.getElementById('global-fiscal-year').value = fiscalYear;

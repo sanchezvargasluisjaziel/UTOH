@@ -23,11 +23,11 @@ function renderSubstances() {
                     <input type="text" id="sub_tariff" required class="w-full p-2 border border-gray-300 rounded-lg text-sm font-mono" placeholder="3827.63.00.00">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-gray-700 mb-1">Módulo</label>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">Clasificación</label>
                     <select id="sub_module" onchange="document.getElementById('sub_ref_wrap').classList.toggle('hidden', this.value !== '3'); document.getElementById('sub_gwp_wrap').classList.toggle('hidden', this.value === '3')" class="w-full p-2 border border-gray-300 rounded-lg text-sm bg-white">
-                        <option value="1">Módulo 1: Gas Regulado</option>
-                        <option value="2">Módulo 2: Gas No Regulado</option>
-                        <option value="3">Módulo 3: Equipo / Aparato</option>
+                        <option value="1">Sustancia regulada sujeta a cuota</option>
+                        <option value="2">Sustancia regulada sin cuota</option>
+                        <option value="3">Equipo o aparato regulado</option>
                     </select>
                 </div>
                 <div id="sub_gwp_wrap">
@@ -66,7 +66,7 @@ function renderSubstances() {
                                     ${s.module === '3' && s.refrigerant ? `<span class="block text-xs text-purple-600 font-normal">Refrigerante: ${escapeHtml(s.refrigerant)}</span>` : ''}
                                 </td>
                                 <td class="p-3.5 font-mono text-xs text-gray-700">${escapeHtml(s.tariff)}</td>
-                                <td class="p-3.5 text-xs font-bold">Módulo ${s.module}</td>
+                                <td class="p-3.5 text-xs font-bold">${moduleName(s.module)}</td>
                                 <td class="p-3.5 text-right text-xs">${String(s.module) === '3' ? '<span class="text-gray-400">No aplica</span>' : (getGwp(s.name) !== null ? `<b>${fmtNum(getGwp(s.name))}</b>` : '<span class="px-2 py-0.5 rounded bg-amber-50 text-amber-700 font-semibold">Sin factor</span>')}</td>
                                 <td class="p-3.5 text-right whitespace-nowrap">
                                     <button onclick="openEditSubstanceModal('${s.id}')" class="text-indigo-600 hover:underline font-bold text-xs mr-3">Editar</button>
@@ -103,7 +103,7 @@ function handleAddSubstance(e) {
         refrigerant,
         gwp
     });
-    logAudit(`Agregó sustancia/equipo ${name} (${tariff}) al Módulo ${module}`, 'Catálogo');
-    showToast(`Sustancia agregada al Módulo ${module}`);
+    logAudit(`Agregó sustancia/equipo ${name} (${tariff}) en "${moduleName(module)}"`, 'Catálogo');
+    showToast(`Sustancia agregada a "${moduleName(module)}"`);
     window.renderAll();
 }

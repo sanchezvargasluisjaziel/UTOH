@@ -156,7 +156,7 @@ window.saveEdit = function() {
             }
             q.limit = limit;
             q.limitCO2 = limitCO2;
-            logAudit(`Modificó cuota de ${q.company} (${q.substance}) a ${q.limit} Ton`, 'Módulo 1 / Cuotas');
+            logAudit(`Modificó cuota de ${q.company} (${q.substance}) a ${q.limit} Ton`, 'Asignación de Cuota');
             showToast('Cuota actualizada correctamente');
         }
     } else if (type === 'company') {
@@ -200,7 +200,8 @@ window.saveEdit = function() {
                     }
                 });
             }
-            logAudit(`Editó empresa "${newName}" (Módulos: ${mods.join(', ')})`, 'Empresas');
+            const renamed = oldName !== newName ? `Cambió el nombre de "${oldName}" a "${newName}". ` : '';
+            logAudit(`${renamed}Editó empresa "${newName}" (RTN ${newRTN}; apartados: ${mods.map(moduleName).join(', ')})`, 'Empresas');
             showToast('Empresa actualizada');
         }
     } else if (type === 'substance') {
@@ -220,7 +221,7 @@ window.saveEdit = function() {
             }
             const usedBy = countSubstanceUsage(oldName, s.module);
             if (newModule !== String(s.module) && (usedBy.quotas > 0 || usedBy.imports > 0)) {
-                customAlert('No se puede cambiar el módulo', `"${oldName}" ya tiene ${usedBy.quotas} cuota(s) y ${usedBy.imports} importación(es) registradas.`);
+                customAlert('No se puede cambiar la clasificación', `"${oldName}" ya tiene ${usedBy.quotas} cuota(s) y ${usedBy.imports} importación(es) registradas.`);
                 return;
             }
             // Si cambia el nombre, se actualiza en cuotas, importaciones y empresas para no perder la relación
@@ -276,7 +277,7 @@ window.saveEdit = function() {
             imp.qty = newQty;
             imp.orderDate = newDate;
             imp.fiscalYear = calculateFiscalYear(imp.orderDate);
-            logAudit(`Editó movimiento [${imp.trackingNumber}]: cantidad=${imp.qty}, fecha=${imp.orderDate}`, `Módulo ${imp.module}`);
+            logAudit(`Editó movimiento [${imp.trackingNumber}]: cantidad=${imp.qty}, fecha=${imp.orderDate}`, moduleName(imp.module));
             showToast('Movimiento actualizado');
         }
     }
@@ -353,16 +354,16 @@ window.deleteImport = function(id) {
 
 window.clearModuleData = function(modNum) {
     const m = String(modNum);
-    customConfirm(`Vaciar Módulo ${m}`, `¿Desea dejar en blanco los movimientos del Módulo ${m}?`, () => {
+    customConfirm('Vaciar movimientos', `¿Desea dejar en blanco los movimientos de "${moduleName(m)}"?${m === '1' ? ' También se borrarán sus cuotas.' : ''}`, () => {
         window.appState.imports = window.appState.imports.filter(i => String(i.module) !== m);
         if (m === '1') window.appState.quotas = [];
         window.renderAll();
-        showToast(`Módulo ${m} vaciado`);
+        showToast(`Movimientos de "${moduleName(m)}" eliminados`);
     });
 };
 
 window.clearAllDemoDataToBlank = function() {
-    customConfirm('Dejar Módulos en Blanco', '¿Desea borrar las empresas, cuotas e importaciones de prueba para ingresar únicamente sus datos reales?', () => {
+    customConfirm('Dejar el Sistema en Blanco', '¿Desea borrar las empresas, cuotas e importaciones de prueba para ingresar únicamente sus datos reales?', () => {
         window.appState.companies = [];
         window.appState.quotas = [];
         window.appState.imports = [];

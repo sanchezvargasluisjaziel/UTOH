@@ -9,7 +9,7 @@ function renderCompanies() {
         <div class="mb-6">
             <span class="text-xs font-bold uppercase tracking-wider text-indigo-600">Configuración de Padrón</span>
             <h2 class="text-2xl font-bold text-gray-800">Catálogo de Empresas Importadoras</h2>
-            <p class="text-sm text-gray-500">Dé de alta o de baja a las empresas importadoras (nombre, RTN y módulos). Las cuotas se asignan aparte, en Asignación de Cuota.</p>
+            <p class="text-sm text-gray-500">Dé de alta o de baja a las empresas importadoras (nombre, RTN y apartados). Las cuotas se asignan aparte, en Asignación de Cuota.</p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -28,19 +28,19 @@ function renderCompanies() {
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Módulos que Importa <span class="text-red-500">*</span></label>
-                        <div class="grid grid-cols-3 gap-2 bg-gray-50 p-2.5 rounded-lg border border-gray-200 text-xs">
+                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Apartados en los que Importa <span class="text-red-500">*</span></label>
+                        <div class="grid grid-cols-1 gap-2 bg-gray-50 p-2.5 rounded-lg border border-gray-200 text-xs">
                             <label class="flex items-center space-x-1.5 cursor-pointer">
                                 <input type="checkbox" id="cat_mod1" value="1" checked onchange="renderDynamicSubstancePicker('cat')" class="rounded text-indigo-600 h-4 w-4">
-                                <span class="font-semibold">Módulo 1</span>
+                                <span class="font-semibold">${moduleName('1')}</span>
                             </label>
                             <label class="flex items-center space-x-1.5 cursor-pointer">
                                 <input type="checkbox" id="cat_mod2" value="2" onchange="renderDynamicSubstancePicker('cat')" class="rounded text-emerald-600 h-4 w-4">
-                                <span class="font-semibold">Módulo 2</span>
+                                <span class="font-semibold">${moduleName('2')}</span>
                             </label>
                             <label class="flex items-center space-x-1.5 cursor-pointer">
                                 <input type="checkbox" id="cat_mod3" value="3" onchange="renderDynamicSubstancePicker('cat')" class="rounded text-purple-600 h-4 w-4">
-                                <span class="font-semibold">Módulo 3</span>
+                                <span class="font-semibold">${moduleName('3')}</span>
                             </label>
                         </div>
                     </div>
@@ -48,7 +48,7 @@ function renderCompanies() {
                     <!-- Selector compacto de sustancias de los módulos elegidos -->
                     <div class="border border-gray-200 bg-gray-50/60 rounded-lg p-3 space-y-2">
                         <div class="flex items-center justify-between">
-                            <span class="text-xs font-bold text-gray-700">Sustancias / Equipos del Módulo</span>
+                            <span class="text-xs font-bold text-gray-700">Sustancias / Equipos Autorizados</span>
                             <div class="flex items-center gap-2">
                                 <span id="cat_sub_count_badge" class="text-[11px] font-bold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full">0 seleccionadas</span>
                                 <button type="button" onclick="toggleAllVisibleSubstances('cat', true)" class="text-[11px] text-indigo-600 hover:underline font-semibold">Todas</button>
@@ -60,7 +60,7 @@ function renderCompanies() {
                     </div>
 
                     <button type="submit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-sm shadow-sm">
-                        + Agregar Empresa y Actualizar Módulos
+                        + Agregar Empresa
                     </button>
                 </form>
             </div>
@@ -76,7 +76,7 @@ function renderCompanies() {
                             <tr class="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500">
                                 <th class="p-3.5 font-semibold">Empresa</th>
                                 <th class="p-3.5 font-semibold">RTN</th>
-                                <th class="p-3.5 font-semibold">Módulos</th>
+                                <th class="p-3.5 font-semibold">Apartados</th>
                                 <th class="p-3.5 font-semibold">Sustancias / Equipos Autorizados</th>
                                 <th class="p-3.5 font-semibold text-right">Acciones</th>
                             </tr>
@@ -90,7 +90,7 @@ function renderCompanies() {
         companies.forEach(c => {
             const mods = (c.modules || ['1']).map(m => {
                 const color = m === '1' ? 'bg-indigo-100 text-indigo-800' : (m === '2' ? 'bg-emerald-100 text-emerald-800' : 'bg-purple-100 text-purple-800');
-                return `<span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${color} mr-1">M${m}</span>`;
+                return `<span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${color} mr-1 mb-1" title="${moduleName(m)}">${MODULE_SHORT[m] || m}</span>`;
             }).join('');
 
             const subs = c.allowedSubstances || [];
@@ -103,7 +103,7 @@ function renderCompanies() {
                     <td class="p-3.5 font-mono text-xs text-gray-600 whitespace-nowrap">${c.rtn ? escapeHtml(c.rtn) : '<span class="text-amber-600 font-sans font-semibold">Sin RTN</span>'}</td>
                     <td class="p-3.5 whitespace-nowrap">${mods}</td>
                     <td class="p-3.5 text-xs text-gray-600 max-w-xs">
-                        ${subs.length > 0 ? `${previewSubs}${extraCount}` : '<span class="text-gray-400">Todas las del módulo</span>'}
+                        ${subs.length > 0 ? `${previewSubs}${extraCount}` : '<span class="text-gray-400">Todas las del apartado</span>'}
                     </td>
                     <td class="p-3.5 text-right whitespace-nowrap">
                         <button onclick="openEditCompanyModal('${c.id}')" class="px-2.5 py-1 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded font-bold text-xs mr-1.5">Editar</button>
@@ -148,7 +148,7 @@ window.renderDynamicSubstancePicker = function(prefix) {
     if (badge) badge.innerText = `${setRef.size} seleccionadas`;
 
     if (selectedMods.length === 0) {
-        container.innerHTML = `<div class="text-xs text-amber-700 p-2">Seleccione al menos un módulo (1, 2 o 3).</div>`;
+        container.innerHTML = `<div class="text-xs text-amber-700 p-2">Seleccione al menos un apartado.</div>`;
         return;
     }
 
@@ -160,7 +160,7 @@ window.renderDynamicSubstancePicker = function(prefix) {
     selectedMods.forEach(m => {
         const group = filteredSubs.filter(s => String(s.module) === m);
         if (group.length === 0) return;
-        const modTitle = m === '1' ? 'Módulo 1: Regulados' : (m === '2' ? 'Módulo 2: No Regulados' : 'Módulo 3: Equipos');
+        const modTitle = moduleName(m);
         html += `<div class="text-[10px] font-bold uppercase text-indigo-700 bg-indigo-50 px-2 py-1 rounded mt-1">${modTitle}</div>`;
         group.forEach(s => {
             const checked = setRef.has(s.name) ? 'checked' : '';

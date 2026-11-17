@@ -147,10 +147,9 @@ function buildModuleReport(mod) {
     const fy = getActiveFiscalYear();
     const monitored = getMonitoredCompanyFilter();
     const list = getReportImports(mod);
-    const titles = { 1: 'Módulo 1: Sustancias Reguladas Sujetas a Cuota', 2: 'Módulo 2: Sustancias Reguladas sin Cuota', 3: 'Módulo 3: Equipos y Aparatos Regulados' };
     const lines = [`Año Fiscal ${fy} (2 de enero al 31 de diciembre)`, `Periodo: ${monthLabel('mod' + mod)} (por fecha de orden)`];
     if (monitored) lines.push(`Empresa: ${monitored}`);
-    let html = reportHeaderHtml(`Reporte de Importaciones — ${titles[mod]}`, lines);
+    let html = reportHeaderHtml(`Reporte de Importaciones — ${moduleName(mod)}`, lines);
 
     if (mod === '3') {
         const units = list.reduce((a, i) => a + (parseInt(i.qty, 10) || 0), 0);
@@ -199,7 +198,7 @@ function buildAuditReport() {
     const period = `${auditMonth === 'all' ? 'Todos los meses' : window.MONTH_NAMES[Number(auditMonth) - 1]} · ${auditYear === 'all' ? 'Todos los años' : auditYear}`;
     return reportHeaderHtml('Reporte de Auditoría de Administradores', [`Periodo: ${period}`, `Registros: ${logs.length}`]) + `
         <table style="width:100%; border-collapse:collapse;"><thead><tr>
-        <th ${TH}>Fecha / Hora</th><th ${TH}>Usuario</th><th ${TH}>Módulo</th><th ${TH}>Movimiento registrado</th></tr></thead><tbody>
+        <th ${TH}>Fecha / Hora</th><th ${TH}>Usuario</th><th ${TH}>Apartado</th><th ${TH}>Movimiento registrado</th></tr></thead><tbody>
         ${logs.length === 0 ? `<tr><td ${TD} colspan="4">Sin registros en el periodo.</td></tr>` : logs.map(a => `<tr>
             <td ${TD}>${escapeHtml(a.timestamp)}</td><td ${TD}>${escapeHtml(a.user)}</td><td ${TD}>${escapeHtml(a.module)}</td><td ${TD}>${escapeHtml(a.action)}</td></tr>`).join('')}
         </tbody></table>`;

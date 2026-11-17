@@ -26,7 +26,7 @@ window.validateCompanyData = function({ name, rtn, modules, excludeId = null }) 
     if (!cleanRTN) return 'El RTN / identificador fiscal es obligatorio.';
     if (cleanRTN.length < 3 || cleanRTN.length > 30) return 'El RTN debe tener entre 3 y 30 caracteres.';
     if (!/^[A-Za-z0-9 -]+$/.test(cleanRTN)) return 'El RTN solo puede contener letras, números, espacios y guiones.';
-    if (!Array.isArray(modules) || modules.length === 0) return 'Seleccione al menos un módulo (1, 2 o 3).';
+    if (!Array.isArray(modules) || modules.length === 0) return 'Seleccione al menos un apartado.';
     const others = window.appState.companies.filter(c => c.id !== excludeId);
     if (others.some(c => c.name.trim().toLowerCase() === cleanName.toLowerCase())) {
         return `Ya existe una empresa llamada "${cleanName}".`;
@@ -70,8 +70,8 @@ window.validateImportData = function({ mod, company, substance, orderDate, arriv
     mod = String(mod);
     const comp = window.appState.companies.find(c => c.name === company);
     if (!comp) return 'Seleccione una empresa registrada.';
-    if (Array.isArray(comp.modules) && !comp.modules.includes(mod)) return `La empresa "${company}" no está dada de alta en el Módulo ${mod}.`;
-    if (!window.appState.substances.some(s => s.name === substance && String(s.module) === mod)) return 'Seleccione una sustancia o equipo válido para este módulo.';
+    if (Array.isArray(comp.modules) && !comp.modules.includes(mod)) return `La empresa "${company}" no está dada de alta en "${moduleName(mod)}".`;
+    if (!window.appState.substances.some(s => s.name === substance && String(s.module) === mod)) return 'Seleccione una sustancia o equipo válido para este apartado.';
     if (!isValidISODate(orderDate)) return 'Capture una fecha de orden válida.';
     if (arrivalDate) {
         if (!isValidISODate(arrivalDate)) return 'La fecha de llegada no es válida.';
@@ -105,8 +105,8 @@ window.validateImportData = function({ mod, company, substance, orderDate, arriv
 window.validateQuotaData = function({ company, substance, year, limit, limitCO2 = null, isEdit = false }) {
     const comp = window.appState.companies.find(c => c.name === company);
     if (!comp) return 'Seleccione una empresa registrada.';
-    if (!isEdit && Array.isArray(comp.modules) && !comp.modules.includes('1')) return `La empresa "${company}" no opera en el Módulo 1.`;
-    if (!window.appState.substances.some(s => s.name === substance && String(s.module) === '1')) return 'Seleccione una sustancia regulada del Módulo 1.';
+    if (!isEdit && Array.isArray(comp.modules) && !comp.modules.includes('1')) return `La empresa "${company}" no opera en "${moduleName('1')}".`;
+    if (!window.appState.substances.some(s => s.name === substance && String(s.module) === '1')) return 'Seleccione una sustancia regulada sujeta a cuota.';
     if (typeof limit !== 'number' || !isFinite(limit)) return 'Capture una cuota numérica en toneladas.';
     if (limit < 0) return 'La cuota no puede ser negativa.';
     if (limit > window.MAX_QTY) return `La cuota no puede exceder ${fmtNum(window.MAX_QTY, 0)} TM.`;
@@ -127,10 +127,10 @@ window.validateSubstanceData = function({ name, tariff, module, gwp = null, refr
     const mod = String(module);
     if (cleanName.length < 2) return 'El nombre es obligatorio (mínimo 2 caracteres).';
     if (cleanName.length > 150) return 'El nombre no puede exceder 150 caracteres.';
-    if (!['1', '2', '3'].includes(mod)) return 'Seleccione un módulo válido.';
+    if (!['1', '2', '3'].includes(mod)) return 'Seleccione una clasificación válida.';
     if (!/^\d{4}\.\d{2}\.\d{2}\.\d{2}$/.test((tariff || '').trim())) return 'La fracción arancelaria debe tener el formato 0000.00.00.00.';
     if (window.appState.substances.some(s => s.id !== excludeId && String(s.module) === mod && s.name.trim().toLowerCase() === cleanName.toLowerCase())) {
-        return `Ya existe "${cleanName}" en el Módulo ${mod}.`;
+        return `Ya existe "${cleanName}" en "${moduleName(mod)}".`;
     }
     if (mod !== '3' && gwp !== null && (typeof gwp !== 'number' || !isFinite(gwp) || gwp <= 0)) return 'El factor TCO₂eq debe ser un número mayor a cero.';
     if ((refrigerant || '').length > 100) return 'El refrigerante no puede exceder 100 caracteres.';

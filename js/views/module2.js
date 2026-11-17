@@ -15,8 +15,8 @@ function renderModule2(activeImports) {
     let html = `
         <div class="mb-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
-                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">MÓDULO 2 • GASES NO REGULADOS</span>
-                <h2 class="text-2xl font-bold text-gray-800 mt-1">Importación de Gases No Regulados (AF ${currentFY})</h2>
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">PROTOCOLO DE MONTREAL • SIN CUOTA</span>
+                <h2 class="text-2xl font-bold text-gray-800 mt-1">${moduleName('2')} (AF ${currentFY})</h2>
                 <p class="text-sm text-gray-500">Contabilización en Toneladas con su fracción arancelaria correspondiente.</p>
             </div>
             <div class="flex flex-wrap items-center gap-2">
@@ -24,10 +24,10 @@ function renderModule2(activeImports) {
                     + Agregar Empresa
                 </button>
                 <button onclick="clearModuleData('2')" class="px-3 py-2 bg-white border border-red-200 hover:bg-red-50 text-red-600 rounded-lg text-xs font-bold">
-                    Vaciar Módulo 2
+                    Vaciar Movimientos
                 </button>
                 <button onclick="openModuleImportModal('2')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm">
-                    + Registrar Importación (Módulo 2)
+                    + Registrar Importación
                 </button>
             </div>
         </div>
@@ -38,7 +38,7 @@ function renderModule2(activeImports) {
         <!-- Empresas Activas en Módulo 2 -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
             <div class="px-5 py-3.5 border-b border-gray-100 flex justify-between items-center bg-emerald-50/50">
-                <h3 class="font-bold text-gray-800 text-sm">Empresas Importadoras en Módulo 2 y Total Acumulado (AF ${currentFY})</h3>
+                <h3 class="font-bold text-gray-800 text-sm">Empresas Importadoras y Total Acumulado (AF ${currentFY})</h3>
                 <span class="text-xs font-bold text-emerald-700">${mod2Companies.length} empresas</span>
             </div>
             <div class="overflow-x-auto">
@@ -46,7 +46,7 @@ function renderModule2(activeImports) {
                     <thead>
                         <tr class="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500">
                             <th class="p-3.5 font-semibold">Empresa Importadora</th>
-                            <th class="p-3.5 font-semibold">Sustancias No Reguladas que Importa</th>
+                            <th class="p-3.5 font-semibold">Sustancias que Importa</th>
                             <th class="p-3.5 font-semibold text-right">Total Importado AF ${currentFY} · ${monthLabel('mod2')} (TM / TCO₂eq)</th>
                             <th class="p-3.5 font-semibold text-right">Acciones</th>
                         </tr>
@@ -55,7 +55,7 @@ function renderModule2(activeImports) {
     `;
 
     if (mod2Companies.length === 0) {
-        html += `<tr><td colspan="4" class="p-6 text-center text-gray-400">No hay empresas registradas para el Módulo 2.</td></tr>`;
+        html += `<tr><td colspan="4" class="p-6 text-center text-gray-400">No hay empresas registradas en este apartado.</td></tr>`;
     } else {
         mod2Companies.forEach(c => {
             const mod2Subs = (c.allowedSubstances || []).filter(sName => {
@@ -72,7 +72,7 @@ function renderModule2(activeImports) {
             html += `
                 <tr class="hover:bg-gray-50">
                     <td class="p-3.5 font-bold text-gray-900">${escapeHtml(c.name)}</td>
-                    <td class="p-3.5 text-xs text-gray-600">${mod2Subs.length > 0 ? mod2Subs.join(', ') : 'Todas las sustancias del Módulo 2'}</td>
+                    <td class="p-3.5 text-xs text-gray-600">${mod2Subs.length > 0 ? mod2Subs.join(', ') : 'Todas las sustancias de este apartado'}</td>
                     <td class="p-3.5 text-right font-extrabold text-emerald-700">${dualQty(totalTon, totalCO2)}</td>
                     <td class="p-3.5 text-right whitespace-nowrap">
                         <button onclick="openEditCompanyModal('${c.id}')" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded font-bold text-xs">Editar Empresa</button>
@@ -91,7 +91,7 @@ function renderModule2(activeImports) {
         <!-- Movimientos Detallados Módulo 2 -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="px-5 py-3.5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                <h3 class="font-bold text-gray-800 text-sm">Movimientos de Importación Registrados — Módulo 2 (AF ${currentFY} · ${monthLabel('mod2')})</h3>
+                <h3 class="font-bold text-gray-800 text-sm">Movimientos de Importación Registrados (AF ${currentFY} · ${monthLabel('mod2')})</h3>
                 <span class="text-xs font-semibold text-gray-500">${mod2Imports.length} movimientos</span>
             </div>
             <div class="overflow-x-auto">
@@ -101,7 +101,7 @@ function renderModule2(activeImports) {
                             <th class="p-3.5 font-semibold">Folio / QR</th>
                             <th class="p-3.5 font-semibold">Fecha Orden</th>
                             <th class="p-3.5 font-semibold">Empresa</th>
-                            <th class="p-3.5 font-semibold">Gas No Regulado</th>
+                            <th class="p-3.5 font-semibold">Sustancia</th>
                             <th class="p-3.5 font-semibold">Fracción Arancelaria</th>
                             <th class="p-3.5 font-semibold text-right">Cantidad (TM / TCO₂eq)</th>
                             <th class="p-3.5 font-semibold text-right">Acciones</th>
@@ -111,7 +111,7 @@ function renderModule2(activeImports) {
     `;
 
     if (mod2Imports.length === 0) {
-        html += `<tr><td colspan="7" class="p-8 text-center text-gray-400">Sin movimientos registrados en el Módulo 2.</td></tr>`;
+        html += `<tr><td colspan="7" class="p-8 text-center text-gray-400">Sin movimientos registrados en este apartado.</td></tr>`;
     } else {
         mod2Imports.forEach(imp => {
             html += `
