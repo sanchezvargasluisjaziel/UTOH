@@ -155,24 +155,24 @@ function buildModuleReport(mod) {
         const units = list.reduce((a, i) => a + (parseInt(i.qty, 10) || 0), 0);
         html += `<table style="width:100%; border-collapse:collapse;"><thead><tr>
             <th ${TH}>Folio</th><th ${TH}>Fecha orden</th><th ${TH}>Empresa</th><th ${TH}>Equipo / Descripción</th>
-            <th ${TH}>Refrigerante</th><th ${TH}>Fracción</th><th ${TH}>Unidades</th></tr></thead><tbody>
+            <th ${TH}>Refrigerante</th><th ${TH}>Fracción</th><th ${TH}>Cantidad (Unidades)</th></tr></thead><tbody>
             ${list.length === 0 ? `<tr><td ${TD} colspan="7">Sin movimientos en el periodo.</td></tr>` : list.map(i => `<tr>
                 <td ${TD}>${escapeHtml(i.trackingNumber)}</td><td ${TD}>${escapeHtml(i.orderDate)}</td><td ${TD}>${escapeHtml(i.company)}</td>
                 <td ${TD}>${escapeHtml(i.type)}${i.productDescription ? `<br><i>${escapeHtml(i.productDescription)}</i>` : ''}</td>
                 <td ${TD}>${escapeHtml(i.contained || 'N/A')}</td><td ${TD}>${escapeHtml(i.tariff)}</td>
                 <td ${TDR}>${fmtNum(i.qty, 0)}</td></tr>`).join('')}
-            </tbody><tfoot><tr><td ${TD} colspan="6"><b>Total (${list.length} movimientos)</b></td><td ${TDR}><b>${fmtNum(units, 0)} Unid.</b></td></tr></tfoot></table>`;
+            </tbody><tfoot><tr><td ${TD} colspan="6"><b>Total (${list.length} movimientos)</b></td><td ${TDR}><b>${fmtNum(units, 0)}</b></td></tr></tfoot></table>`;
     } else {
         const tm = round2(list.reduce((a, i) => a + (parseFloat(i.qty) || 0), 0));
         html += `<table style="width:100%; border-collapse:collapse;"><thead><tr>
             <th ${TH}>Folio</th><th ${TH}>Fecha orden</th><th ${TH}>Empresa</th><th ${TH}>Sustancia</th>
-            <th ${TH}>Fracción</th><th ${TH}>Cantidad (TM)</th><th ${TH}>TCO₂eq</th></tr></thead><tbody>
+            <th ${TH}>Fracción</th><th ${TH}>Cantidad (TM)</th><th ${TH}>Cantidad (TCO₂eq)</th></tr></thead><tbody>
             ${list.length === 0 ? `<tr><td ${TD} colspan="7">Sin movimientos en el periodo.</td></tr>` : list.map(i => `<tr>
                 <td ${TD}>${escapeHtml(i.trackingNumber)}</td><td ${TD}>${escapeHtml(i.orderDate)}</td><td ${TD}>${escapeHtml(i.company)}</td>
                 <td ${TD}>${escapeHtml(i.type)}</td><td ${TD}>${escapeHtml(i.tariff)}</td>
-                <td ${TDR}>${fmtNum(i.qty)}</td><td ${TDR}>${fmtCO2(calcCO2(i.qty, i.type))}</td></tr>`).join('')}
+                <td ${TDR}>${fmtNum(i.qty)}</td><td ${TDR}>${fmtCO2Num(calcCO2(i.qty, i.type))}</td></tr>`).join('')}
             </tbody><tfoot><tr><td ${TD} colspan="5"><b>Total (${list.length} movimientos)</b></td>
-                <td ${TDR}><b>${fmtNum(tm)} TM</b></td><td ${TDR}><b>${fmtCO2(sumCO2(list))}</b></td></tr></tfoot></table>`;
+                <td ${TDR}><b>${fmtNum(tm)}</b></td><td ${TDR}><b>${fmtCO2Num(sumCO2(list))}</b></td></tr></tfoot></table>`;
     }
 
     if (mod === '1') {
@@ -180,13 +180,13 @@ function buildModuleReport(mod) {
         if (monitored) quotas = quotas.filter(q => q.company === monitored);
         html += `<h2 style="font-size:13px; font-weight:800; margin:18px 0 6px;">Balance anual de cuotas (AF ${fy}, no depende del mes seleccionado)</h2>
             <table style="width:100%; border-collapse:collapse;"><thead><tr>
-            <th ${TH}>Empresa</th><th ${TH}>Sustancia</th><th ${TH}>Cuota disponible</th><th ${TH}>Importado</th><th ${TH}>Cuota restante</th></tr></thead><tbody>
-            ${quotas.length === 0 ? `<tr><td ${TD} colspan="5">Sin cuotas asignadas.</td></tr>` : quotas.map(q => {
+            <th ${TH}>Empresa</th><th ${TH}>Sustancia</th><th ${TH}>Cuota (TM)</th><th ${TH}>Cuota (TCO₂eq)</th><th ${TH}>Importado (TM)</th><th ${TH}>Importado (TCO₂eq)</th><th ${TH}>Restante (TM)</th><th ${TH}>Restante (TCO₂eq)</th></tr></thead><tbody>
+            ${quotas.length === 0 ? `<tr><td ${TD} colspan="8">Sin cuotas asignadas.</td></tr>` : quotas.map(q => {
                 const b = getQuotaBalance(q.company, q.substance, fy);
                 return `<tr><td ${TD}>${escapeHtml(q.company)}</td><td ${TD}>${escapeHtml(q.substance)}</td>
-                    <td ${TDR}>${fmtNum(b.limitTM)} TM<br>${fmtCO2(b.limitCO2)}</td>
-                    <td ${TDR}>${fmtNum(b.usedTM)} TM<br>${fmtCO2(b.usedCO2)}</td>
-                    <td ${TDR}>${fmtNum(b.remTM)} TM<br>${fmtCO2(b.remCO2)}</td></tr>`;
+                    <td ${TDR}>${fmtNum(b.limitTM)}</td><td ${TDR}>${fmtCO2Num(b.limitCO2)}</td>
+                    <td ${TDR}>${fmtNum(b.usedTM)}</td><td ${TDR}>${fmtCO2Num(b.usedCO2)}</td>
+                    <td ${TDR}>${fmtNum(b.remTM)}</td><td ${TDR}>${fmtCO2Num(b.remCO2)}</td></tr>`;
             }).join('')}</tbody></table>`;
     }
     return html;

@@ -18,10 +18,19 @@ window.MODULE_NAMES = {
     '2': 'Sustancias reguladas sin cuota',
     '3': 'Equipos y aparatos regulados'
 };
-// Versión corta para etiquetas pequeñas (tabla de empresas); el nombre completo va en el title.
-window.MODULE_SHORT = { '1': 'Con cuota', '2': 'Sin cuota', '3': 'Equipos' };
 window.moduleName = function(mod) {
     return window.MODULE_NAMES[String(mod)] || 'Sistema';
+};
+
+// Apartados en los que participa una empresa en un año fiscal: con cuota si tiene cuotas asignadas,
+// y cualquiera donde haya registrado importaciones. Se deriva de los datos, no se captura en el catálogo.
+window.companyModules = function(companyName, fy) {
+    const mods = new Set();
+    if (window.appState.quotas.some(q => q.company === companyName && Number(q.year) === Number(fy))) mods.add('1');
+    window.appState.imports
+        .filter(i => i.company === companyName && Number(i.fiscalYear) === Number(fy))
+        .forEach(i => mods.add(String(i.module)));
+    return ['1', '2', '3'].filter(m => mods.has(m));
 };
 
 window.generateTrackingFolio = function(fy, mod) {

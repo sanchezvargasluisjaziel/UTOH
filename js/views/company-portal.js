@@ -22,7 +22,7 @@ function renderCompanyPortal() {
                 <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-300">Portal de Monitoreo Personal y Comprobantes</span>
                 <h2 class="text-xl font-bold mt-0.5">${escapeHtml(compObj.name)} — Año Fiscal ${currentFY}</h2>
                 <div class="flex flex-wrap gap-1.5 mt-2">
-                    ${(compObj.modules || ['1']).map(m => `<span class="px-2 py-0.5 bg-white/10 rounded text-xs font-semibold">${moduleName(m)}</span>`).join('')}
+                    ${companyModules(compObj.name, currentFY).map(m => `<span class="px-2 py-0.5 bg-white/10 rounded text-xs font-semibold">${moduleName(m)}</span>`).join('')}
                 </div>
             </div>
             <div class="flex items-center gap-2">
@@ -43,11 +43,21 @@ function renderCompanyPortal() {
                         const bal = getQuotaBalance(q.company, q.substance, currentFY);
                         return `
                             <div class="p-3.5 rounded-lg border border-gray-200 bg-gray-50">
-                                <div class="font-bold text-indigo-700 text-sm">${escapeHtml(q.substance)}</div>
-                                <div class="text-xs text-gray-500 mt-1">Asignada: <b>${fmtNum(bal.limitTM)} Ton</b> (${fmtCO2(bal.limitCO2)})</div>
-                                <div class="text-xs text-gray-500">Usado: <b>${fmtNum(bal.usedTM)} Ton</b> (${fmtCO2(bal.usedCO2)})</div>
-                                <div class="text-sm font-extrabold ${bal.remTM < 0 ? 'text-red-600' : 'text-emerald-700'} mt-1">Disponible: ${fmtNum(bal.remTM)} Ton</div>
-                                <div class="text-xs font-bold text-emerald-700">${fmtCO2(bal.remCO2)}</div>
+                                <div class="font-bold text-indigo-700 text-sm mb-1.5">${escapeHtml(q.substance)}</div>
+                                <table class="w-full text-xs">
+                                    <thead>
+                                        <tr class="text-[10px] uppercase text-gray-400">
+                                            <th class="text-left font-semibold pb-1"></th>
+                                            <th class="text-right font-semibold pb-1">TM</th>
+                                            <th class="text-right font-semibold pb-1">TCO₂eq</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="text-gray-600">
+                                        <tr><td>Asignada</td><td class="text-right font-bold">${fmtNum(bal.limitTM)}</td><td class="text-right">${fmtCO2Num(bal.limitCO2)}</td></tr>
+                                        <tr><td>Usado</td><td class="text-right font-bold">${fmtNum(bal.usedTM)}</td><td class="text-right">${fmtCO2Num(bal.usedCO2)}</td></tr>
+                                        <tr class="font-extrabold ${bal.remTM < 0 ? 'text-red-600' : 'text-emerald-700'}"><td>Disponible</td><td class="text-right">${fmtNum(bal.remTM)}</td><td class="text-right">${fmtCO2Num(bal.remCO2)}</td></tr>
+                                    </tbody>
+                                </table>
                             </div>
                         `;
                     }).join('')}
@@ -70,19 +80,23 @@ function renderCompanyPortal() {
                             <th class="p-3.5 font-semibold">Sustancia / Equipo</th>
                             <th class="p-3.5 font-semibold">Fecha Orden</th>
                             <th class="p-3.5 font-semibold text-right">Cantidad</th>
+                            <th class="p-3.5 font-semibold">Unidad</th>
+                            <th class="p-3.5 font-semibold text-right">TCO₂eq</th>
                             <th class="p-3.5 font-semibold text-right">Comprobante</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 text-sm">
                         ${compImports.length === 0
-                            ? `<tr><td colspan="6" class="p-6 text-center text-gray-400">No hay comprobantes registrados para esta empresa en el AF ${currentFY}.</td></tr>`
+                            ? `<tr><td colspan="8" class="p-6 text-center text-gray-400">No hay comprobantes registrados para esta empresa en el AF ${currentFY}.</td></tr>`
                             : compImports.map(imp => `
                                 <tr class="hover:bg-gray-50">
                                     <td class="p-3.5 font-mono text-xs font-bold text-indigo-700">${escapeHtml(imp.trackingNumber)}</td>
                                     <td class="p-3.5 text-xs font-semibold">${moduleName(imp.module)}</td>
                                     <td class="p-3.5 font-semibold">${escapeHtml(imp.type)}</td>
                                     <td class="p-3.5 text-xs">${escapeHtml(imp.orderDate)}</td>
-                                    <td class="p-3.5 text-right font-bold">${imp.qty} ${imp.module === '3' ? 'Unid.' : `Ton <span class="block text-[11px] text-gray-500">${fmtCO2(calcCO2(imp.qty, imp.type))}</span>`}</td>
+                                    <td class="p-3.5 text-right font-bold">${imp.module === '3' ? fmtNum(imp.qty, 0) : fmtNum(imp.qty)}</td>
+                                    <td class="p-3.5 text-xs text-gray-600">${imp.module === '3' ? 'Unidades' : 'TM'}</td>
+                                    <td class="p-3.5 text-right text-gray-600">${imp.module === '3' ? '<span class="text-gray-400">No aplica</span>' : fmtCO2Num(calcCO2(imp.qty, imp.type))}</td>
                                     <td class="p-3.5 text-right">
                                         <button onclick="openReceiptById('${imp.id}', 'company')" class="px-3 py-1 bg-indigo-600 text-white rounded text-xs font-bold hover:bg-indigo-700">
                                             Ver Ejemplar Empresa

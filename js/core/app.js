@@ -125,7 +125,6 @@ function renderActiveTab() {
         html += renderCompanyPortal();
     } else if (currentTab === 'companies') {
         html += renderCompanies();
-        setTimeout(() => renderDynamicSubstancePicker('cat'), 0);
     } else if (currentTab === 'substances') {
         html += renderSubstances();
     } else if (currentTab === 'years') {

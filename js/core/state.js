@@ -24,10 +24,5 @@ window.appState = {
     if (saved) window.PERSISTED_KEYS.forEach(k => { window.appState[k] = saved[k]; });
 })();
 
-window.tempSelectedSubstances = {
-    cat: new Set(),
-    qc: new Set(),
-    edit: new Set()
-};
 
 const tabs = ['quotas', 'mod1', 'mod2', 'mod3', 'portal', 'companies', 'substances', 'years', 'audit'];

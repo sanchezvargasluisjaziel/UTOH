@@ -41,12 +41,12 @@ window.openModuleImportModal = function(modNum) {
     document.getElementById('modal_qty').value = '';
     document.getElementById('modal_qty_co2_text').innerText = '';
 
-    // Filtrar empresas que pertenecen a este módulo
+    // Cualquier empresa del catálogo puede importar; en el apartado con cuota se valida su cuota
     const compSel = document.getElementById('modal_company');
-    const modCompanies = window.appState.companies.filter(c => !Array.isArray(c.modules) || c.modules.includes(mod));
-    compSel.innerHTML = modCompanies.length > 0
-        ? modCompanies.map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('')
-        : `<option value="" disabled selected>Agregue una empresa a este apartado...</option>`;
+    const companies = window.appState.companies;
+    compSel.innerHTML = companies.length > 0
+        ? companies.map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('')
+        : `<option value="" disabled selected>Agregue primero una empresa...</option>`;
 
     onOrderDateOrCompanyChange();
     document.getElementById('import-modal').classList.remove('hidden');
@@ -65,7 +65,6 @@ window.onOrderDateOrCompanyChange = function() {
     const badge = document.getElementById('modal_computed_fy_badge');
     if (badge) badge.innerText = `Contabiliza en AF ${computedFY}`;
 
-    const compObj = window.appState.companies.find(c => c.name === compName);
 
     if (mod === '1') {
         const sel1 = document.getElementById('modal_type_select_mod1');
@@ -80,20 +79,12 @@ window.onOrderDateOrCompanyChange = function() {
         }
     } else if (mod === '2') {
         const sel2 = document.getElementById('modal_type_select_mod2');
-        let subs2 = window.appState.substances.filter(s => String(s.module) === '2');
-        if (compObj && Array.isArray(compObj.allowedSubstances) && compObj.allowedSubstances.length > 0) {
-            const filtered = subs2.filter(s => compObj.allowedSubstances.includes(s.name));
-            if (filtered.length > 0) subs2 = filtered;
-        }
+        const subs2 = window.appState.substances.filter(s => String(s.module) === '2');
         sel2.innerHTML = subs2.map(s => `<option value="${escapeHtml(s.name)}">${escapeHtml(s.name)}</option>`).join('');
         autoFillTariffAndDetails('2');
     } else if (mod === '3') {
         const sel3 = document.getElementById('modal_type_select_mod3');
-        let subs3 = window.appState.substances.filter(s => String(s.module) === '3');
-        if (compObj && Array.isArray(compObj.allowedSubstances) && compObj.allowedSubstances.length > 0) {
-            const filtered = subs3.filter(s => compObj.allowedSubstances.includes(s.name));
-            if (filtered.length > 0) subs3 = filtered;
-        }
+        const subs3 = window.appState.substances.filter(s => String(s.module) === '3');
         sel3.innerHTML = subs3.map(s => `<option value="${escapeHtml(s.name)}">${escapeHtml(s.name)}</option>`).join('');
         autoFillTariffAndDetails('3');
     }

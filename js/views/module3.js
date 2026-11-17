@@ -5,11 +5,10 @@
 // =========================================================================
 function renderModule3(activeImports) {
     const currentFY = getActiveFiscalYear();
-    const monitored = getMonitoredCompanyFilter();
     const mod3Imports = filterByMonth(activeImports.filter(i => String(i.module) === '3'), 'mod3');
 
-    let mod3Companies = window.appState.companies.filter(c => Array.isArray(c.modules) && c.modules.includes('3'));
-    if (monitored) mod3Companies = mod3Companies.filter(c => c.name === monitored);
+    // Empresas con importaciones de equipos dentro del periodo (año fiscal y mes activos)
+    const mod3Companies = [...new Set(mod3Imports.map(i => i.company))].sort((a, b) => a.localeCompare(b));
 
     let html = `
         <div class="mb-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -19,7 +18,7 @@ function renderModule3(activeImports) {
                 <p class="text-sm text-gray-500">Medición exclusiva en Unidades de aparatos con gases regulados o no regulados.</p>
             </div>
             <div class="flex flex-wrap items-center gap-2">
-                <button onclick="openQuickCompanyModal('3')" class="px-3 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg text-xs font-bold">
+                <button onclick="openQuickCompanyModal()" class="px-3 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg text-xs font-bold">
                     + Agregar Empresa
                 </button>
                 <button onclick="clearModuleData('3')" class="px-3 py-2 bg-white border border-red-200 hover:bg-red-50 text-red-600 rounded-lg text-xs font-bold">
@@ -44,34 +43,26 @@ function renderModule3(activeImports) {
                     <thead>
                         <tr class="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500">
                             <th class="p-3.5 font-semibold">Empresa Importadora</th>
-                            <th class="p-3.5 font-semibold">Categorías de Equipos Autorizadas</th>
-                            <th class="p-3.5 font-semibold text-right">Total Unidades AF ${currentFY} · ${monthLabel('mod3')}</th>
-                            <th class="p-3.5 font-semibold text-right">Acciones</th>
+                            <th class="p-3.5 font-semibold">Categorías de Equipos Importadas</th>
+                            <th class="p-3.5 font-semibold text-right">Total (Unidades)</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 text-sm">
     `;
 
     if (mod3Companies.length === 0) {
-        html += `<tr><td colspan="4" class="p-6 text-center text-gray-400">No hay empresas registradas en este apartado.</td></tr>`;
+        html += `<tr><td colspan="3" class="p-6 text-center text-gray-400">Ninguna empresa ha importado en este apartado durante el periodo.</td></tr>`;
     } else {
-        mod3Companies.forEach(c => {
-            const mod3Subs = (c.allowedSubstances || []).filter(sName => {
-                const sObj = window.appState.substances.find(s => s.name === sName);
-                return sObj && String(sObj.module) === '3';
-            });
-            const totalUnits = mod3Imports
-                .filter(i => i.company === c.name)
-                .reduce((acc, cur) => acc + parseInt(cur.qty || 0, 10), 0);
+        mod3Companies.forEach(name => {
+            const compImports = mod3Imports.filter(i => i.company === name);
+            const cats = [...new Set(compImports.map(i => i.type))];
+            const totalUnits = compImports.reduce((acc, cur) => acc + parseInt(cur.qty || 0, 10), 0);
 
             html += `
                 <tr class="hover:bg-gray-50">
-                    <td class="p-3.5 font-bold text-gray-900">${escapeHtml(c.name)}</td>
-                    <td class="p-3.5 text-xs text-gray-600">${mod3Subs.length > 0 ? mod3Subs.join(', ') : 'Todos los equipos del catálogo'}</td>
-                    <td class="p-3.5 text-right font-extrabold text-purple-700">${totalUnits.toLocaleString('en-US')} Unidades</td>
-                    <td class="p-3.5 text-right whitespace-nowrap">
-                        <button onclick="openEditCompanyModal('${c.id}')" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded font-bold text-xs">Editar Empresa</button>
-                    </td>
+                    <td class="p-3.5 font-bold text-gray-900">${escapeHtml(name)}</td>
+                    <td class="p-3.5 text-xs text-gray-600">${cats.map(escapeHtml).join(', ')}</td>
+                    <td class="p-3.5 text-right font-extrabold text-purple-700">${fmtNum(totalUnits, 0)}</td>
                 </tr>
             `;
         });
@@ -99,7 +90,7 @@ function renderModule3(activeImports) {
                             <th class="p-3.5 font-semibold">Equipo / Descripción</th>
                             <th class="p-3.5 font-semibold">Refrigerante</th>
                             <th class="p-3.5 font-semibold">Arancel</th>
-                            <th class="p-3.5 font-semibold text-right">Unidades</th>
+                            <th class="p-3.5 font-semibold text-right">Cantidad (Unidades)</th>
                             <th class="p-3.5 font-semibold text-right">Acciones</th>
                         </tr>
                     </thead>
@@ -131,7 +122,7 @@ function renderModule3(activeImports) {
                         <span class="block text-[10px] text-gray-500">${escapeHtml(imp.regStatus || '')}</span>
                     </td>
                     <td class="p-3.5 font-mono text-xs text-gray-600">${escapeHtml(imp.tariff)}</td>
-                    <td class="p-3.5 text-right font-bold text-gray-900">${ parseInt(imp.qty, 10).toLocaleString('en-US') } Unid.</td>
+                    <td class="p-3.5 text-right font-bold text-gray-900">${fmtNum(imp.qty, 0)}</td>
                     <td class="p-3.5 text-right whitespace-nowrap">
                         <button onclick="openReceiptById('${imp.id}')" class="text-emerald-600 hover:text-emerald-800 font-bold text-xs mr-2">Recibo/QR</button>
                         <button onclick="openEditImportModal('${imp.id}')" class="text-indigo-600 hover:text-indigo-900 font-bold text-xs mr-2">Editar</button>

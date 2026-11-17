@@ -5,8 +5,8 @@
 // =========================================================================
 // Alta de empresa (sin asignar cuotas: eso se hace en Asignación de Cuota).
 // Devuelve true si se guardó; si los datos no son válidos muestra el motivo y devuelve false.
-window.saveCompanyToDB = function(name, rtn, modules, allowedSubstances = []) {
-    const error = validateCompanyData({ name, rtn, modules });
+window.saveCompanyToDB = function(name, rtn) {
+    const error = validateCompanyData({ name, rtn });
     if (error) {
         customAlert('No se pudo registrar la empresa', error);
         return false;
@@ -16,12 +16,10 @@ window.saveCompanyToDB = function(name, rtn, modules, allowedSubstances = []) {
     window.appState.companies.push({
         id: 'comp_' + Date.now(),
         name: cleanName,
-        rtn: cleanRTN,
-        modules: modules,
-        allowedSubstances: allowedSubstances
+        rtn: cleanRTN
     });
     window.appState.selectedPortalCompany = cleanName;
-    logAudit(`Dio de alta la empresa "${cleanName}" (RTN ${cleanRTN}) en: ${modules.map(moduleName).join(', ')}`, 'Empresas');
+    logAudit(`Dio de alta la empresa "${cleanName}" (RTN ${cleanRTN})`, 'Empresas');
     showToast(`Empresa "${cleanName}" registrada`);
     window.renderAll();
     return true;
