@@ -16,7 +16,6 @@ window.openEditQuotaModal = function(quotaId) {
     document.getElementById('edit-modal-type').value = 'quota';
     document.getElementById('edit-modal-title').innerText = `Editar Cuota: ${q.company} (${q.substance})`;
     document.getElementById('edit-modal-name-container').classList.add('hidden');
-    document.getElementById('edit-modal-company-extra').classList.add('hidden');
     document.getElementById('edit-modal-module-container').classList.add('hidden');
     document.getElementById('edit-modal-refrigerant-container').classList.add('hidden');
     document.getElementById('edit-modal-date-container').classList.add('hidden');
@@ -44,14 +43,6 @@ window.openEditCompanyModal = function(compId) {
     document.getElementById('edit-modal-rtn-container').classList.remove('hidden');
     document.getElementById('edit-modal-rtn').value = c.rtn || '';
 
-    document.getElementById('edit-modal-company-extra').classList.remove('hidden');
-    document.getElementById('edit-comp-mod1').checked = (c.modules || []).includes('1');
-    document.getElementById('edit-comp-mod2').checked = (c.modules || []).includes('2');
-    document.getElementById('edit-comp-mod3').checked = (c.modules || []).includes('3');
-
-    window.tempSelectedSubstances.edit = new Set(c.allowedSubstances || []);
-    renderDynamicSubstancePicker('edit');
-
     document.getElementById('edit-modal-module-container').classList.add('hidden');
     document.getElementById('edit-modal-refrigerant-container').classList.add('hidden');
     document.getElementById('edit-modal-limit-container').classList.add('hidden');
@@ -72,7 +63,6 @@ window.openEditSubstanceModal = function(subId) {
     document.getElementById('edit-modal-name-label').innerText = 'Nombre de Sustancia / Equipo';
     document.getElementById('edit-modal-input').value = s.name;
 
-    document.getElementById('edit-modal-company-extra').classList.add('hidden');
     document.getElementById('edit-modal-module-container').classList.remove('hidden');
     document.getElementById('edit-modal-module').value = String(s.module);
     document.getElementById('edit-modal-tariff').value = s.tariff || '';
@@ -104,7 +94,6 @@ window.openEditYearModal = function(yearId) {
     document.getElementById('edit-modal-name-label').innerText = 'Año Fiscal';
     document.getElementById('edit-modal-input').value = y.year;
 
-    document.getElementById('edit-modal-company-extra').classList.add('hidden');
     document.getElementById('edit-modal-module-container').classList.add('hidden');
     document.getElementById('edit-modal-refrigerant-container').classList.add('hidden');
     document.getElementById('edit-modal-limit-container').classList.add('hidden');
@@ -121,7 +110,6 @@ window.openEditImportModal = function(impId) {
     document.getElementById('edit-modal-title').innerText = `Editar Importación [${imp.trackingNumber}]`;
 
     document.getElementById('edit-modal-name-container').classList.add('hidden');
-    document.getElementById('edit-modal-company-extra').classList.add('hidden');
     document.getElementById('edit-modal-module-container').classList.add('hidden');
     document.getElementById('edit-modal-refrigerant-container').classList.add('hidden');
 
@@ -149,7 +137,7 @@ window.saveEdit = function() {
             const limit = parseFloat(document.getElementById('edit-modal-limit').value);
             const co2Raw = document.getElementById('edit-modal-limitco2').value;
             const limitCO2 = co2Raw === '' ? null : parseFloat(co2Raw);
-            const error = validateQuotaData({ company: q.company, substance: q.substance, year: q.year, limit, limitCO2, isEdit: true });
+            const error = validateQuotaData({ company: q.company, substance: q.substance, year: q.year, limit, limitCO2 });
             if (error) {
                 customAlert('No se pudo guardar la cuota', error);
                 return;
@@ -164,44 +152,22 @@ window.saveEdit = function() {
         if (c) {
             const oldName = c.name;
             const newName = document.getElementById('edit-modal-input').value.trim();
-            const mods = [];
-            if (document.getElementById('edit-comp-mod1').checked) mods.push('1');
-            if (document.getElementById('edit-comp-mod2').checked) mods.push('2');
-            if (document.getElementById('edit-comp-mod3').checked) mods.push('3');
             const newRTN = document.getElementById('edit-modal-rtn').value.trim();
-            const error = validateCompanyData({ name: newName, rtn: newRTN, modules: mods, excludeId: c.id });
+            const error = validateCompanyData({ name: newName, rtn: newRTN, excludeId: c.id });
             if (error) {
                 customAlert('No se pudo guardar la empresa', error);
                 return;
             }
             c.name = newName;
             c.rtn = newRTN;
-            c.modules = mods;
-            c.allowedSubstances = Array.from(window.tempSelectedSubstances.edit);
 
             // Propagar cambio de nombre en cuotas e importaciones
             if (oldName !== newName) {
                 window.appState.quotas.forEach(q => { if (q.company === oldName) q.company = newName; });
                 window.appState.imports.forEach(i => { if (i.company === oldName) i.company = newName; });
             }
-            // Asegurar cuotas base para Módulo 1 si se agregaron sustancias reguladas
-            const currentFY = getActiveFiscalYear();
-            if (mods.includes('1')) {
-                c.allowedSubstances.forEach(subName => {
-                    const sObj = window.appState.substances.find(s => s.name === subName && String(s.module) === '1');
-                    if (sObj && !window.appState.quotas.some(q => q.company === newName && q.substance === subName && Number(q.year) === currentFY)) {
-                        window.appState.quotas.push({
-                            id: 'q_' + Date.now() + Math.floor(Math.random() * 1000),
-                            company: newName,
-                            substance: subName,
-                            limit: 0,
-                            year: currentFY
-                        });
-                    }
-                });
-            }
             const renamed = oldName !== newName ? `Cambió el nombre de "${oldName}" a "${newName}". ` : '';
-            logAudit(`${renamed}Editó empresa "${newName}" (RTN ${newRTN}; apartados: ${mods.map(moduleName).join(', ')})`, 'Empresas');
+            logAudit(`${renamed}Editó empresa "${newName}" (RTN ${newRTN})`, 'Empresas');
             showToast('Empresa actualizada');
         }
     } else if (type === 'substance') {
@@ -228,9 +194,6 @@ window.saveEdit = function() {
             if (newName !== oldName) {
                 window.appState.quotas.forEach(q => { if (q.substance === oldName && String(s.module) === '1') q.substance = newName; });
                 window.appState.imports.forEach(i => { if (i.type === oldName && String(i.module) === String(s.module)) i.type = newName; });
-                window.appState.companies.forEach(c => {
-                    if (Array.isArray(c.allowedSubstances)) c.allowedSubstances = c.allowedSubstances.map(n => n === oldName ? newName : n);
-                });
             }
             s.name = newName;
             s.module = newModule;

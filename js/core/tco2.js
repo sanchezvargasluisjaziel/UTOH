@@ -52,9 +52,9 @@ window.getQuotaBalance = function(company, substance, fy, excludeImportId = null
     };
 };
 
-// Celda de dos líneas: cantidad en TM y su equivalente en TCO2eq.
-window.dualQty = function(tm, co2, tmClass = '', unit = 'Ton') {
-    return `<div class="${tmClass}">${fmtNum(tm)} ${unit}</div><div class="text-[11px] font-semibold text-gray-500">${fmtCO2(co2)}</div>`;
+// Número de TCO2eq sin unidad, para celdas cuya columna ya la indica ("—" si no hay factor).
+window.fmtCO2Num = function(n) {
+    return (n === null || n === undefined || isNaN(n)) ? '—' : fmtNum(n);
 };
 
 // Aviso cuando alguna sustancia de la vista no tiene factor TCO2eq (sus equivalentes salen como "—").

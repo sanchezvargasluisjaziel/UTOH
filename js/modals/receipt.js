@@ -14,10 +14,11 @@ window.openReceiptById = function(impId, mode = 'both') {
         ? `${imp.type} - ${imp.productDescription}`
         : imp.type;
     document.getElementById('rec_tariff').innerText = imp.tariff || 'S/N';
-    document.getElementById('rec_qty').innerText = `${imp.qty} ${imp.module === '3' ? 'Unidades' : 'Toneladas'}`;
+    document.getElementById('rec_qty_label').innerText = `Cantidad Registrada (${imp.module === '3' ? 'Unidades' : 'TM'}):`;
+    document.getElementById('rec_qty').innerText = imp.module === '3' ? fmtNum(imp.qty, 0) : fmtNum(imp.qty);
     const co2Row = document.getElementById('rec_qty_co2_row');
     co2Row.classList.toggle('hidden', String(imp.module) === '3');
-    document.getElementById('rec_qty_co2').innerText = fmtCO2(calcCO2(imp.qty, imp.type));
+    document.getElementById('rec_qty_co2').innerText = fmtCO2Num(calcCO2(imp.qty, imp.type));
     document.getElementById('rec_order_date').innerText = `${imp.orderDate} (AF ${imp.fiscalYear})`;
     document.getElementById('rec_arrival_date').innerText = imp.arrivalDate || 'Pendiente';
     document.getElementById('rec_user').innerText = imp.registeredBy || 'Admin 1 (Sistema)';
@@ -28,12 +29,12 @@ window.openReceiptById = function(impId, mode = 'both') {
     if (String(imp.module) === '1') {
         qBreakdown.classList.remove('hidden');
         const bal = getQuotaBalance(imp.company, imp.type, imp.fiscalYear);
-        document.getElementById('rec_quota_limit').innerText = `${fmtNum(bal.limitTM)} Ton`;
-        document.getElementById('rec_quota_used').innerText = `${fmtNum(bal.usedTM)} Ton`;
-        document.getElementById('rec_quota_remaining').innerText = `${fmtNum(bal.remTM)} Ton`;
-        document.getElementById('rec_quota_limit_co2').innerText = fmtCO2(bal.limitCO2);
-        document.getElementById('rec_quota_used_co2').innerText = fmtCO2(bal.usedCO2);
-        document.getElementById('rec_quota_remaining_co2').innerText = fmtCO2(bal.remCO2);
+        document.getElementById('rec_quota_limit').innerText = fmtNum(bal.limitTM);
+        document.getElementById('rec_quota_used').innerText = fmtNum(bal.usedTM);
+        document.getElementById('rec_quota_remaining').innerText = fmtNum(bal.remTM);
+        document.getElementById('rec_quota_limit_co2').innerText = fmtCO2Num(bal.limitCO2);
+        document.getElementById('rec_quota_used_co2').innerText = fmtCO2Num(bal.usedCO2);
+        document.getElementById('rec_quota_remaining_co2').innerText = fmtCO2Num(bal.remCO2);
     } else {
         qBreakdown.classList.add('hidden');
     }

@@ -18,7 +18,7 @@ window.normalizeRTN = function(rtn) {
 };
 
 // Valida los datos de una empresa. excludeId sirve al editar (ignora a la propia empresa).
-window.validateCompanyData = function({ name, rtn, modules, excludeId = null }) {
+window.validateCompanyData = function({ name, rtn, excludeId = null }) {
     const cleanName = (name || '').trim();
     const cleanRTN = (rtn || '').trim();
     if (cleanName.length < 2) return 'El nombre de la empresa es obligatorio (mínimo 2 caracteres).';
@@ -26,7 +26,6 @@ window.validateCompanyData = function({ name, rtn, modules, excludeId = null }) 
     if (!cleanRTN) return 'El RTN / identificador fiscal es obligatorio.';
     if (cleanRTN.length < 3 || cleanRTN.length > 30) return 'El RTN debe tener entre 3 y 30 caracteres.';
     if (!/^[A-Za-z0-9 -]+$/.test(cleanRTN)) return 'El RTN solo puede contener letras, números, espacios y guiones.';
-    if (!Array.isArray(modules) || modules.length === 0) return 'Seleccione al menos un apartado.';
     const others = window.appState.companies.filter(c => c.id !== excludeId);
     if (others.some(c => c.name.trim().toLowerCase() === cleanName.toLowerCase())) {
         return `Ya existe una empresa llamada "${cleanName}".`;
@@ -70,7 +69,6 @@ window.validateImportData = function({ mod, company, substance, orderDate, arriv
     mod = String(mod);
     const comp = window.appState.companies.find(c => c.name === company);
     if (!comp) return 'Seleccione una empresa registrada.';
-    if (Array.isArray(comp.modules) && !comp.modules.includes(mod)) return `La empresa "${company}" no está dada de alta en "${moduleName(mod)}".`;
     if (!window.appState.substances.some(s => s.name === substance && String(s.module) === mod)) return 'Seleccione una sustancia o equipo válido para este apartado.';
     if (!isValidISODate(orderDate)) return 'Capture una fecha de orden válida.';
     if (arrivalDate) {
@@ -101,11 +99,9 @@ window.validateImportData = function({ mod, company, substance, orderDate, arriv
 
 // ------------------------------------------------------------------ cuotas
 
-// isEdit omite la revisión de módulo de la empresa (una cuota existente se puede seguir editando).
-window.validateQuotaData = function({ company, substance, year, limit, limitCO2 = null, isEdit = false }) {
+window.validateQuotaData = function({ company, substance, year, limit, limitCO2 = null }) {
     const comp = window.appState.companies.find(c => c.name === company);
     if (!comp) return 'Seleccione una empresa registrada.';
-    if (!isEdit && Array.isArray(comp.modules) && !comp.modules.includes('1')) return `La empresa "${company}" no opera en "${moduleName('1')}".`;
     if (!window.appState.substances.some(s => s.name === substance && String(s.module) === '1')) return 'Seleccione una sustancia regulada sujeta a cuota.';
     if (typeof limit !== 'number' || !isFinite(limit)) return 'Capture una cuota numérica en toneladas.';
     if (limit < 0) return 'La cuota no puede ser negativa.';
