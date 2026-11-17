@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%236366f1'/%3E%3Ctext x='16' y='23' font-size='20' font-family='Arial' font-weight='bold' text-anchor='middle' fill='white'%3EU%3C/text%3E%3C/svg%3E">
+    <title>UTOH - Consulta de Comprobante</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="min-h-screen bg-slate-100 text-slate-800 flex items-start sm:items-center justify-center p-4">
+
+    <main class="w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+        <header class="bg-slate-900 text-white px-5 py-4 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-indigo-500 flex items-center justify-center font-extrabold shrink-0">U</div>
+            <div>
+                <h1 class="text-base font-bold leading-tight">Consulta de Comprobante de Importación</h1>
+                <p class="text-[11px] text-slate-300">Control UTOH · Protocolo de Montreal</p>
+            </div>
+        </header>
+
+        <!-- Estado de la consulta (se llena con JS) -->
+        <section id="status" class="mx-5 mt-5 p-3.5 rounded-xl border text-xs"></section>
+
+        <!-- Datos del comprobante (se llenan con JS usando textContent) -->
+        <section id="details" class="hidden px-5 pt-4 pb-2">
+            <div class="bg-slate-900 text-white rounded-xl p-4 mb-4">
+                <span class="text-[10px] uppercase tracking-widest text-indigo-300 font-bold block">Folio</span>
+                <span id="folio" class="text-lg font-mono font-extrabold tracking-wider text-emerald-400 break-all"></span>
+            </div>
+            <dl id="fields" class="text-sm divide-y divide-gray-100"></dl>
+        </section>
+
+        <footer class="px-5 py-4 mt-2 bg-gray-50 border-t border-gray-200 text-[11px] text-gray-500 leading-relaxed">
+            Esta página muestra los datos guardados en el código QR. La validación oficial contra la base de datos
+            estará disponible cuando el sistema cuente con servidor.
+        </footer>
+    </main>
+
+    <script src="js/core/storage.js"></script>
+    <script src="js/core/helpers.js"></script>
+    <script src="js/core/tco2.js"></script>
+    <script src="js/core/receipt-link.js"></script>
+    <script>
+    (function renderVerification() {
+        const STYLES = {
+            ok:    'bg-emerald-50 border-emerald-200 text-emerald-900',
+            info:  'bg-amber-50 border-amber-200 text-amber-900',
+            error: 'bg-red-50 border-red-200 text-red-800'
+        };
+
+        function setStatus(kind, title, text) {
+            const box = document.getElementById('status');
+            box.className = `mx-5 mt-5 p-3.5 rounded-xl border text-xs ${STYLES[kind]}`;
+            box.replaceChildren();
+            const t = document.createElement('div');
+            t.className = 'font-bold text-sm mb-0.5';
+            t.textContent = title;
+            const p = document.createElement('div');
+            p.textContent = text;
+            box.append(t, p);
+        }
+
+        function addField(label, value) {
+            const row = document.createElement('div');
+            row.className = 'flex justify-between gap-4 py-2';
+            const dt = document.createElement('dt');
+            dt.className = 'text-gray-500 shrink-0';
+            dt.textContent = label;
+            const dd = document.createElement('dd');
+            dd.className = 'font-semibold text-gray-900 text-right break-words';
+            dd.textContent = value;
+            row.append(dt, dd);
+            document.getElementById('fields').append(row);
+        }
+
+        const param = new URLSearchParams(window.location.search).get('d');
+        const rec = decodeReceiptPayload(param);
+        if (!rec) {
+            setStatus('error', 'QR no válido', 'El código escaneado está incompleto o no corresponde a un comprobante del sistema UTOH.');
+            return;
+        }
+
+        const isUnits = rec.module === '3';
+        document.getElementById('folio').textContent = rec.folio;
+        addField('Empresa importadora', rec.company);
+        addField('Apartado', moduleName(rec.module));
+        addField(isUnits ? 'Equipo / aparato' : 'Sustancia', rec.type);
+        if (rec.description) addField('Descripción', rec.description);
+        addField('Fracción arancelaria', rec.tariff || 'S/N');
+        addField(isUnits ? 'Cantidad (Unidades)' : 'Cantidad (TM)', isUnits ? fmtNum(rec.qty, 0) : fmtNum(rec.qty));
+        if (!isUnits) addField('Equivalente (TCO₂eq)', fmtCO2Num(rec.co2));
+        addField('Fecha de orden', rec.orderDate);
+        addField('Año fiscal', String(rec.fiscalYear));
+        document.getElementById('details').classList.remove('hidden');
+
+        // Si este navegador tiene los registros del sistema (mismo sitio), se comparan con el QR.
+        const saved = loadPersistedState();
+        const local = saved ? saved.imports.find(i => i.trackingNumber === rec.folio) : null;
+        if (!local) {
+            setStatus('info', 'Datos del comprobante',
+                'Estos son los datos con los que se emitió el comprobante. Todavía no es una validación oficial.');
+        } else {
+            const same = local.company === rec.company && local.type === rec.type &&
+                String(local.module) === rec.module && Number(local.qty) === rec.qty &&
+                local.orderDate === rec.orderDate && Number(local.fiscalYear) === rec.fiscalYear;
+            if (same) {
+                setStatus('ok', '✓ Coincide con los registros de este equipo',
+                    'El folio existe en los registros guardados en este navegador y sus datos son iguales a los del QR.');
+            } else {
+                setStatus('error', '✕ No coincide con los registros de este equipo',
+                    'El folio existe aquí, pero sus datos son distintos a los del QR. El comprobante pudo haberse modificado después de emitirse o el QR fue alterado.');
+            }
+        }
+    })();
+    </script>
+</body>
+</html>

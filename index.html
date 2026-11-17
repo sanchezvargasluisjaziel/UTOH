@@ -450,8 +450,10 @@
                 <!-- QR + Detalles de la Operación -->
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center bg-gray-50 p-4 rounded-xl border border-gray-200">
                     <div class="flex flex-col items-center justify-center bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
-                        <canvas id="receipt-qr-canvas" width="140" height="140"></canvas>
-                        <span class="text-[10px] font-bold text-gray-500 mt-1.5 uppercase tracking-wider">QR de Verificación</span>
+                        <canvas id="receipt-qr-canvas" width="180" height="180" class="w-full max-w-[160px] h-auto"></canvas>
+                        <span class="text-[10px] font-bold text-gray-500 mt-1.5 uppercase tracking-wider">QR de Consulta</span>
+                        <a id="rec_qr_link" href="#" target="_blank" rel="noopener" class="text-[10px] font-semibold text-indigo-600 hover:underline mt-0.5">Abrir liga del QR</a>
+                        <span id="rec_qr_note" class="hidden text-[10px] text-amber-700 text-center mt-1 leading-tight">El QR abre en el celular solo cuando el sistema está publicado en internet.</span>
                     </div>
                     <div class="sm:col-span-2 space-y-2 text-xs">
                         <div class="flex justify-between border-b border-gray-200 pb-1.5">
@@ -610,6 +612,7 @@
     <script src="js/core/state.js"></script>
     <script src="js/core/helpers.js"></script>
     <script src="js/core/tco2.js"></script>
+    <script src="js/core/receipt-link.js"></script>
     <script src="js/core/validators.js"></script>
     <script src="js/core/reports.js"></script>
     <script src="js/core/ui.js"></script>

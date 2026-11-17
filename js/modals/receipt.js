@@ -39,26 +39,22 @@ window.openReceiptById = function(impId, mode = 'both') {
         qBreakdown.classList.add('hidden');
     }
 
-    // Generar Código QR Oficial
+    // Código QR: liga a verificar.html con los datos del comprobante
     const qrCanvas = document.getElementById('receipt-qr-canvas');
+    const verifyUrl = buildVerifyUrl(imp);
     if (qrCanvas && window.QRious) {
         new QRious({
             element: qrCanvas,
-            value: JSON.stringify({
-                folio: imp.trackingNumber,
-                empresa: imp.company,
-                modulo: imp.module,
-                sustancia: imp.type,
-                arancel: imp.tariff,
-                cantidad: imp.qty,
-                tco2eq: calcCO2(imp.qty, imp.type),
-                orden: imp.orderDate,
-                af: imp.fiscalYear
-            }),
-            size: 140,
-            level: 'M'
+            value: verifyUrl,
+            size: 180,
+            level: 'L'
         });
     }
+    const qrLink = document.getElementById('rec_qr_link');
+    if (qrLink) qrLink.href = verifyUrl;
+    // Desde file:// (doble clic) la liga no abre en un celular: solo funciona publicada en un sitio web.
+    const qrNote = document.getElementById('rec_qr_note');
+    if (qrNote) qrNote.classList.toggle('hidden', /^https?:$/.test(window.location.protocol));
 
     switchReceiptCopyMode(mode);
     document.getElementById('receipt-modal').classList.remove('hidden');
