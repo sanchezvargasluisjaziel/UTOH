@@ -2,10 +2,20 @@
 
 window.renderAll = function() {
     updateGlobalDropdowns();
+    updateFiscalYearControl();
     renderActiveTab();
     updateTopRegisterButton();
     window.savePersistedState();
 };
+
+// Pantallas que dependen del año fiscal activo. En las demás (catálogos, años, auditoría) el selector se oculta;
+// el valor elegido se conserva para cuando se regrese a una de estas pantallas.
+const FISCAL_YEAR_TABS = ['quotas', 'mod1', 'mod2', 'mod3', 'portal'];
+
+function updateFiscalYearControl() {
+    const ctrl = document.getElementById('fiscal-year-control');
+    if (ctrl) ctrl.classList.toggle('hidden', !FISCAL_YEAR_TABS.includes(window.appState.activeTab));
+}
 
 function updateGlobalDropdowns() {
     const fySelect = document.getElementById('global-fiscal-year');

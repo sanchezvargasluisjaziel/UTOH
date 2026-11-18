@@ -5,7 +5,6 @@
 // =========================================================================
 function renderCompanies() {
     const companies = window.appState.companies;
-    const currentFY = getActiveFiscalYear();
     let html = `
         <div class="mb-6">
             <span class="text-xs font-bold uppercase tracking-wider text-indigo-600">Configuración de Padrón</span>
@@ -45,7 +44,6 @@ function renderCompanies() {
                             <tr class="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500">
                                 <th class="p-3.5 font-semibold">Empresa</th>
                                 <th class="p-3.5 font-semibold">RTN</th>
-                                <th class="p-3.5 font-semibold text-right">Cuotas AF ${currentFY}</th>
                                 <th class="p-3.5 font-semibold text-right">Acciones</th>
                             </tr>
                         </thead>
@@ -53,15 +51,13 @@ function renderCompanies() {
     `;
 
     if (companies.length === 0) {
-        html += `<tr><td colspan="4" class="p-8 text-center text-gray-400">No hay empresas registradas.</td></tr>`;
+        html += `<tr><td colspan="3" class="p-8 text-center text-gray-400">No hay empresas registradas.</td></tr>`;
     } else {
         companies.forEach(c => {
-            const nQuotas = window.appState.quotas.filter(q => q.company === c.name && Number(q.year) === currentFY).length;
             html += `
                 <tr class="hover:bg-gray-50">
                     <td class="p-3.5 font-bold text-gray-900">${escapeHtml(c.name)}</td>
                     <td class="p-3.5 font-mono text-xs text-gray-600 whitespace-nowrap">${c.rtn ? escapeHtml(c.rtn) : '<span class="text-amber-600 font-sans font-semibold">Sin RTN</span>'}</td>
-                    <td class="p-3.5 text-right text-xs font-semibold text-gray-600">${nQuotas}</td>
                     <td class="p-3.5 text-right whitespace-nowrap">
                         <button onclick="openEditCompanyModal('${c.id}')" class="px-2.5 py-1 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded font-bold text-xs mr-1.5">Editar</button>
                         <button onclick="deleteCompany('${c.id}')" class="px-2.5 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded font-bold text-xs">Eliminar</button>
