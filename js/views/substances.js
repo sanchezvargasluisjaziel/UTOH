@@ -9,7 +9,9 @@ function renderSubstances() {
         <div class="mb-6">
             <span class="text-xs font-bold uppercase tracking-wider text-indigo-600">Arancel Centroamericano UTOH (Sin CFC)</span>
             <h2 class="text-2xl font-bold text-gray-800">Catálogo de Sustancias y Equipos (${subs.length})</h2>
+            <p class="text-sm text-gray-500">PCG (Potencial de Calentamiento Global, 100 años) de las sustancias sujetas a cuota según la lista de Honduras (IPCC AR4).</p>
         </div>
+        ${pendingGwpNotice(subs)}
 
         <!-- Formulario Agregar Sustancia o Equipo -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 mb-6">
@@ -31,7 +33,7 @@ function renderSubstances() {
                     </select>
                 </div>
                 <div id="sub_gwp_wrap">
-                    <label class="block text-xs font-bold text-gray-700 mb-1">Factor TCO₂eq por TM</label>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">PCG (TCO₂eq por TM)</label>
                     <input type="number" step="0.01" min="0" id="sub_gwp" class="w-full p-2 border border-gray-300 rounded-lg text-sm" placeholder="Ej. 1810">
                 </div>
                 <div id="sub_ref_wrap" class="hidden">
@@ -54,7 +56,7 @@ function renderSubstances() {
                             <th class="p-3.5 font-semibold">Nombre / Descripción</th>
                             <th class="p-3.5 font-semibold">Fracción Arancelaria</th>
                             <th class="p-3.5 font-semibold">Clasificación</th>
-                            <th class="p-3.5 font-semibold text-right">Factor TCO₂eq / TM</th>
+                            <th class="p-3.5 font-semibold text-right">PCG (TCO₂eq / TM)</th>
                             <th class="p-3.5 font-semibold text-right">Acciones</th>
                         </tr>
                     </thead>
@@ -67,7 +69,7 @@ function renderSubstances() {
                                 </td>
                                 <td class="p-3.5 font-mono text-xs text-gray-700">${escapeHtml(s.tariff)}</td>
                                 <td class="p-3.5 text-xs font-bold">${moduleName(s.module)}</td>
-                                <td class="p-3.5 text-right text-xs">${String(s.module) === '3' ? '<span class="text-gray-400">No aplica</span>' : (getGwp(s.name) !== null ? `<b>${fmtNum(getGwp(s.name))}</b>` : '<span class="px-2 py-0.5 rounded bg-amber-50 text-amber-700 font-semibold">Sin factor</span>')}</td>
+                                <td class="p-3.5 text-right text-xs">${renderGwpCell(s)}</td>
                                 <td class="p-3.5 text-right whitespace-nowrap">
                                     <button onclick="openEditSubstanceModal('${s.id}')" class="text-indigo-600 hover:underline font-bold text-xs mr-3">Editar</button>
                                     <button onclick="deleteSubstance('${s.id}')" class="text-red-500 hover:underline font-bold text-xs">Eliminar</button>
@@ -106,4 +108,27 @@ function handleAddSubstance(e) {
     logAudit(`Agregó sustancia/equipo ${name} (${tariff}) en "${moduleName(module)}"`, 'Catálogo');
     showToast(`Sustancia agregada a "${moduleName(module)}"`);
     window.renderAll();
+}
+
+// Celda del PCG: valor, "Sin factor" o la marca "Por confirmar" (celdas en amarillo de la lista de Honduras).
+function renderGwpCell(s) {
+    if (String(s.module) === '3') return '<span class="text-gray-400">No aplica</span>';
+    const g = getGwp(s.name);
+    const value = g !== null ? `<b>${fmtNum(g)}</b>` : '<span class="px-2 py-0.5 rounded bg-amber-50 text-amber-700 font-semibold">Sin factor</span>';
+    if (!s.gwpPending) return value;
+    const note = s.gwpNote ? escapeHtml(s.gwpNote) : 'Por confirmar con Honduras';
+    return `${value}<span class="block mt-1 text-[10px] font-bold text-amber-700" title="${note}">⚠ Por confirmar</span><span class="block text-[10px] text-gray-500">${note}</span>`;
+}
+
+// Aviso con cuántas sustancias tienen el PCG pendiente de confirmar.
+function pendingGwpNotice(subs) {
+    const pending = subs.filter(s => s.gwpPending);
+    if (pending.length === 0) return '';
+    const sinValor = pending.filter(s => getGwp(s.name) === null).length;
+    return `
+        <div class="mb-4 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl px-4 py-3 text-xs">
+            <b>${pending.length} sustancia(s) con PCG por confirmar con Honduras</b> (${sinValor} sin valor todavía).
+            Al capturar el valor confirmado con "Editar", la marca desaparece.
+        </div>
+    `;
 }

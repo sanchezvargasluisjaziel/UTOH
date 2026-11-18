@@ -69,6 +69,10 @@ window.openEditSubstanceModal = function(subId) {
 
     document.getElementById('edit-modal-refrigerant').value = s.refrigerant || '';
     document.getElementById('edit-modal-gwp').value = (s.gwp === null || s.gwp === undefined) ? '' : s.gwp;
+    // PCG por confirmar con Honduras: muestra la nota y la casilla para confirmarlo aunque el valor no cambie
+    document.getElementById('edit-modal-gwp-pending').classList.toggle('hidden', !s.gwpPending);
+    document.getElementById('edit-modal-gwp-note').innerText = s.gwpNote || 'Valor por confirmar con Honduras.';
+    document.getElementById('edit-modal-gwp-confirmed').checked = false;
     toggleEditRefrigerantField();
 
     document.getElementById('edit-modal-limit-container').classList.add('hidden');
@@ -201,12 +205,21 @@ window.saveEdit = function() {
                 window.appState.quotas.forEach(q => { if (q.substance === oldName && String(s.module) === '1') q.substance = newName; });
                 window.appState.imports.forEach(i => { if (i.type === oldName && String(i.module) === String(s.module)) i.type = newName; });
             }
+            // Capturar a mano un factor distinto confirma el PCG (quita la marca "por confirmar")
+            const oldGwp = (s.gwp === null || s.gwp === undefined || s.gwp === '') ? null : Number(s.gwp);
+            const confirmedNow = document.getElementById('edit-modal-gwp-confirmed').checked;
+            if (newGwp !== oldGwp || (confirmedNow && newGwp !== null)) {
+                s.gwpConfirmed = true;
+                s.gwpPending = false;
+                s.gwpNote = '';
+            }
             s.name = newName;
             s.module = newModule;
             s.tariff = newTariff;
             s.refrigerant = newRefrigerant;
             s.gwp = newGwp;
-            logAudit(`Editó sustancia/equipo "${s.name}"`, 'Catálogo');
+            const pcgText = s.gwpConfirmed && newGwp !== null ? ` (PCG ${newGwp} confirmado)` : '';
+            logAudit(`Editó sustancia/equipo "${s.name}"${pcgText}`, 'Catálogo');
             showToast('Sustancia actualizada');
         }
     } else if (type === 'year') {
