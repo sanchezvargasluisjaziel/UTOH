@@ -23,14 +23,35 @@ window.moduleName = function(mod) {
 };
 
 // Apartados en los que participa una empresa en un año fiscal: con cuota si tiene cuotas asignadas,
-// y cualquiera donde haya registrado importaciones. Se deriva de los datos, no se captura en el catálogo.
+// los asignados en Asignación de Cuota (sin cuota / equipos) y cualquiera donde haya registrado importaciones.
 window.companyModules = function(companyName, fy) {
     const mods = new Set();
     if (window.appState.quotas.some(q => q.company === companyName && Number(q.year) === Number(fy))) mods.add('1');
+    const comp = window.appState.companies.find(c => c.name === companyName);
+    ((comp && comp.assignments) || []).forEach(a => mods.add(String(a.module)));
     window.appState.imports
         .filter(i => i.company === companyName && Number(i.fiscalYear) === Number(fy))
         .forEach(i => mods.add(String(i.module)));
     return ['1', '2', '3'].filter(m => mods.has(m));
+};
+
+// Empresas de un apartado sin cuota / equipos: las asignadas más las que tienen importaciones en la lista dada.
+// Respeta la vista filtrada por empresa (selector de usuario).
+window.companiesInModule = function(mod, importsList) {
+    const monitored = getMonitoredCompanyFilter();
+    const names = new Set(importsList.map(i => i.company));
+    window.appState.companies.forEach(c => {
+        if ((c.assignments || []).some(a => a.module === String(mod))) names.add(c.name);
+    });
+    return [...names].filter(n => !monitored || n === monitored).sort((a, b) => a.localeCompare(b));
+};
+
+// Sustancias o equipos de una empresa en un apartado: asignados más los que importó en la lista dada.
+window.substancesOfCompanyInModule = function(companyName, mod, compImports) {
+    const comp = window.appState.companies.find(c => c.name === companyName);
+    const names = new Set(((comp && comp.assignments) || []).filter(a => a.module === String(mod)).map(a => a.substance));
+    compImports.forEach(i => names.add(i.type));
+    return [...names];
 };
 
 window.generateTrackingFolio = function(fy, mod) {

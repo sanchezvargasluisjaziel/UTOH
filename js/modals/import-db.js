@@ -42,6 +42,7 @@ window.validateDatabasePayload = function(data) {
         if (names.has(c.name.trim().toLowerCase())) return `${at}: la empresa "${c.name}" está repetida.`;
         names.add(c.name.trim().toLowerCase());
         if (c.rtn !== undefined && (typeof c.rtn !== 'string' || c.rtn.length > 30)) return `${at}: "rtn" no es válido.`;
+        if (c.assignments !== undefined && (!Array.isArray(c.assignments) || c.assignments.some(x => !x || !['2', '3'].includes(String(x.module)) || typeof x.substance !== 'string' || x.substance.length > 200))) return `${at}: "assignments" debe ser una lista de {module: "2"|"3", substance}.`;
     }
     const companyNames = new Set(companies.map(c => c.name));
 

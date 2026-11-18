@@ -116,6 +116,20 @@ window.validateQuotaData = function({ company, substance, year, limit, limitCO2 
     return null;
 };
 
+// Asignación a un apartado sin cuota (2) o de equipos (3).
+window.validateAssignmentData = function({ company, module, substance }) {
+    const comp = window.appState.companies.find(c => c.name === company);
+    if (!comp) return 'Seleccione una empresa registrada.';
+    if (!['2', '3'].includes(String(module))) return 'Seleccione un apartado sin cuota o de equipos.';
+    if (!window.appState.substances.some(s => s.name === substance && String(s.module) === String(module))) {
+        return String(module) === '3' ? 'Seleccione un equipo del catálogo.' : 'Seleccione una sustancia del catálogo.';
+    }
+    if ((comp.assignments || []).some(a => a.module === String(module) && a.substance === substance)) {
+        return `"${company}" ya está asignada a "${substance}" en "${moduleName(module)}".`;
+    }
+    return null;
+};
+
 // ------------------------------------------------------------------ sustancias y años fiscales
 
 window.validateSubstanceData = function({ name, tariff, module, gwp = null, refrigerant = '', excludeId = null }) {

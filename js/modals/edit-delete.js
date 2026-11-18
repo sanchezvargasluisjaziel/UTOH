@@ -196,14 +196,17 @@ window.saveEdit = function() {
                 return;
             }
             const usedBy = countSubstanceUsage(oldName, s.module);
-            if (newModule !== String(s.module) && (usedBy.quotas > 0 || usedBy.imports > 0)) {
-                customAlert('No se puede cambiar la clasificación', `"${oldName}" ya tiene ${usedBy.quotas} cuota(s) y ${usedBy.imports} importación(es) registradas.`);
+            if (newModule !== String(s.module) && (usedBy.quotas > 0 || usedBy.imports > 0 || usedBy.assignments > 0)) {
+                customAlert('No se puede cambiar la clasificación', `"${oldName}" ya tiene ${usedBy.quotas} cuota(s), ${usedBy.assignments} asignación(es) y ${usedBy.imports} importación(es) registradas.`);
                 return;
             }
             // Si cambia el nombre, se actualiza en cuotas, importaciones y empresas para no perder la relación
             if (newName !== oldName) {
                 window.appState.quotas.forEach(q => { if (q.substance === oldName && String(s.module) === '1') q.substance = newName; });
                 window.appState.imports.forEach(i => { if (i.type === oldName && String(i.module) === String(s.module)) i.type = newName; });
+                window.appState.companies.forEach(c => (c.assignments || []).forEach(a => {
+                    if (a.substance === oldName && a.module === String(s.module)) a.substance = newName;
+                }));
             }
             // Capturar a mano un factor distinto confirma el PCG (quita la marca "por confirmar")
             const oldGwp = (s.gwp === null || s.gwp === undefined || s.gwp === '') ? null : Number(s.gwp);
@@ -272,7 +275,8 @@ window.saveEdit = function() {
 window.countSubstanceUsage = function(name, module) {
     return {
         quotas: String(module) === '1' ? window.appState.quotas.filter(q => q.substance === name).length : 0,
-        imports: window.appState.imports.filter(i => i.type === name && String(i.module) === String(module)).length
+        imports: window.appState.imports.filter(i => i.type === name && String(i.module) === String(module)).length,
+        assignments: window.appState.companies.reduce((n, c) => n + (c.assignments || []).filter(a => a.substance === name && a.module === String(module)).length, 0)
     };
 };
 
@@ -315,8 +319,8 @@ window.deleteSubstance = function(id) {
     const sub = window.appState.substances.find(s => s.id === id);
     if (sub) {
         const usage = countSubstanceUsage(sub.name, sub.module);
-        if (usage.quotas > 0 || usage.imports > 0) {
-            customAlert('No se puede eliminar', `"${sub.name}" tiene ${usage.quotas} cuota(s) y ${usage.imports} importación(es) registradas. Elimínelas primero.`);
+        if (usage.quotas > 0 || usage.imports > 0 || usage.assignments > 0) {
+            customAlert('No se puede eliminar', `"${sub.name}" tiene ${usage.quotas} cuota(s), ${usage.assignments} asignación(es) y ${usage.imports} importación(es) registradas. Elimínelas primero.`);
             return;
         }
     }

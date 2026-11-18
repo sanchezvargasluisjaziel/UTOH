@@ -51,3 +51,32 @@ window.saveQuotaToDB = function(company, substance, limit, year, limitCO2 = null
     window.renderAll();
     return true;
 };
+
+// Asigna una empresa a un apartado sin cuota o de equipos con una sustancia/equipo.
+// Es permanente y solo informativa: no limita las importaciones de ese apartado.
+window.saveAssignmentToDB = function(company, module, substance) {
+    const error = validateAssignmentData({ company, module, substance });
+    if (error) {
+        customAlert('No se pudo asignar', error);
+        return false;
+    }
+    const comp = window.appState.companies.find(c => c.name === company);
+    if (!Array.isArray(comp.assignments)) comp.assignments = [];
+    comp.assignments.push({ module: String(module), substance });
+    logAudit(`Asignó a ${company} en "${moduleName(module)}": ${substance}`, 'Asignación de Cuota');
+    showToast(`${company} asignada a "${moduleName(module)}"`);
+    window.renderAll();
+    return true;
+};
+
+window.removeAssignment = function(company, module, substance) {
+    customConfirm('Quitar asignación', `¿Desea quitar a "${company}" de "${moduleName(module)}" (${substance})? Sus importaciones ya registradas no se borran.`, () => {
+        const comp = window.appState.companies.find(c => c.name === company);
+        if (comp && Array.isArray(comp.assignments)) {
+            comp.assignments = comp.assignments.filter(a => !(a.module === String(module) && a.substance === substance));
+        }
+        logAudit(`Quitó a ${company} de "${moduleName(module)}": ${substance}`, 'Asignación de Cuota');
+        window.renderAll();
+        showToast('Asignación eliminada');
+    });
+};

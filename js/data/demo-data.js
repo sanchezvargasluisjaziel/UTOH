@@ -9,12 +9,14 @@ window.DEMO_COMPANIES = [
     {
         id: "c2",
         name: "EcoGas Honduras",
-        rtn: "0501-1995-200002"
+        rtn: "0501-1995-200002",
+        assignments: [{ module: "2", substance: "R-600a (Isobutano)" }, { module: "2", substance: "R-290 (Propano licuado)" }]
     },
     {
         id: "c3",
         name: "ClimaCorp Equipos S.A.",
-        rtn: "0801-2001-300003"
+        rtn: "0801-2001-300003",
+        assignments: [{ module: "3", substance: "Equipos de aire acondicionado tipo Split System" }]
     }
 ];
 
