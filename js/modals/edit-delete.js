@@ -69,6 +69,10 @@ window.openEditSubstanceModal = function(subId) {
 
     document.getElementById('edit-modal-refrigerant').value = s.refrigerant || '';
     document.getElementById('edit-modal-gwp').value = (s.gwp === null || s.gwp === undefined) ? '' : s.gwp;
+    // PCG por confirmar con Honduras: muestra la nota y la casilla para confirmarlo aunque el valor no cambie
+    document.getElementById('edit-modal-gwp-pending').classList.toggle('hidden', !s.gwpPending);
+    document.getElementById('edit-modal-gwp-note').innerText = s.gwpNote || 'Valor por confirmar con Honduras.';
+    document.getElementById('edit-modal-gwp-confirmed').checked = false;
     toggleEditRefrigerantField();
 
     document.getElementById('edit-modal-limit-container').classList.add('hidden');
@@ -161,10 +165,16 @@ window.saveEdit = function() {
             c.name = newName;
             c.rtn = newRTN;
 
-            // Propagar cambio de nombre en cuotas e importaciones
+            // Propagar cambio de nombre en cuotas, importaciones y en la empresa seleccionada (portal y vista de empresa)
             if (oldName !== newName) {
                 window.appState.quotas.forEach(q => { if (q.company === oldName) q.company = newName; });
                 window.appState.imports.forEach(i => { if (i.company === oldName) i.company = newName; });
+                if (window.appState.selectedPortalCompany === oldName) window.appState.selectedPortalCompany = newName;
+                const roleSel = document.getElementById('user-role-selector');
+                if (roleSel && roleSel.value === `COMPANY_VIEW:${oldName}`) {
+                    const opt = Array.from(roleSel.options).find(o => o.value === roleSel.value);
+                    if (opt) { opt.value = `COMPANY_VIEW:${newName}`; opt.textContent = `🏢 Empresa: ${newName}`; }
+                }
             }
             const renamed = oldName !== newName ? `Cambió el nombre de "${oldName}" a "${newName}". ` : '';
             logAudit(`${renamed}Editó empresa "${newName}" (RTN ${newRTN})`, 'Empresas');
@@ -186,21 +196,33 @@ window.saveEdit = function() {
                 return;
             }
             const usedBy = countSubstanceUsage(oldName, s.module);
-            if (newModule !== String(s.module) && (usedBy.quotas > 0 || usedBy.imports > 0)) {
-                customAlert('No se puede cambiar la clasificación', `"${oldName}" ya tiene ${usedBy.quotas} cuota(s) y ${usedBy.imports} importación(es) registradas.`);
+            if (newModule !== String(s.module) && (usedBy.quotas > 0 || usedBy.imports > 0 || usedBy.assignments > 0)) {
+                customAlert('No se puede cambiar la clasificación', `"${oldName}" ya tiene ${usedBy.quotas} cuota(s), ${usedBy.assignments} asignación(es) y ${usedBy.imports} importación(es) registradas.`);
                 return;
             }
             // Si cambia el nombre, se actualiza en cuotas, importaciones y empresas para no perder la relación
             if (newName !== oldName) {
                 window.appState.quotas.forEach(q => { if (q.substance === oldName && String(s.module) === '1') q.substance = newName; });
                 window.appState.imports.forEach(i => { if (i.type === oldName && String(i.module) === String(s.module)) i.type = newName; });
+                window.appState.companies.forEach(c => (c.assignments || []).forEach(a => {
+                    if (a.substance === oldName && a.module === String(s.module)) a.substance = newName;
+                }));
+            }
+            // Capturar a mano un factor distinto confirma el PCG (quita la marca "por confirmar")
+            const oldGwp = (s.gwp === null || s.gwp === undefined || s.gwp === '') ? null : Number(s.gwp);
+            const confirmedNow = document.getElementById('edit-modal-gwp-confirmed').checked;
+            if (newGwp !== oldGwp || (confirmedNow && newGwp !== null)) {
+                s.gwpConfirmed = true;
+                s.gwpPending = false;
+                s.gwpNote = '';
             }
             s.name = newName;
             s.module = newModule;
             s.tariff = newTariff;
             s.refrigerant = newRefrigerant;
             s.gwp = newGwp;
-            logAudit(`Editó sustancia/equipo "${s.name}"`, 'Catálogo');
+            const pcgText = s.gwpConfirmed && newGwp !== null ? ` (PCG ${newGwp} confirmado)` : '';
+            logAudit(`Editó sustancia/equipo "${s.name}"${pcgText}`, 'Catálogo');
             showToast('Sustancia actualizada');
         }
     } else if (type === 'year') {
@@ -253,7 +275,8 @@ window.saveEdit = function() {
 window.countSubstanceUsage = function(name, module) {
     return {
         quotas: String(module) === '1' ? window.appState.quotas.filter(q => q.substance === name).length : 0,
-        imports: window.appState.imports.filter(i => i.type === name && String(i.module) === String(module)).length
+        imports: window.appState.imports.filter(i => i.type === name && String(i.module) === String(module)).length,
+        assignments: window.appState.companies.reduce((n, c) => n + (c.assignments || []).filter(a => a.substance === name && a.module === String(module)).length, 0)
     };
 };
 
@@ -285,6 +308,7 @@ window.deleteCompany = function(id) {
         window.appState.companies = window.appState.companies.filter(x => x.id !== id);
         window.appState.quotas = window.appState.quotas.filter(q => q.company !== c.name);
         window.appState.imports = window.appState.imports.filter(i => i.company !== c.name);
+        if (window.appState.selectedPortalCompany === c.name) window.appState.selectedPortalCompany = null;
         logAudit(`Dio de baja la empresa "${c.name}" (RTN ${c.rtn || 'sin RTN'}), con ${nQuotas} cuota(s) y ${nImports} importación(es)`, 'Empresas');
         window.renderAll();
         showToast('Empresa eliminada');
@@ -295,8 +319,8 @@ window.deleteSubstance = function(id) {
     const sub = window.appState.substances.find(s => s.id === id);
     if (sub) {
         const usage = countSubstanceUsage(sub.name, sub.module);
-        if (usage.quotas > 0 || usage.imports > 0) {
-            customAlert('No se puede eliminar', `"${sub.name}" tiene ${usage.quotas} cuota(s) y ${usage.imports} importación(es) registradas. Elimínelas primero.`);
+        if (usage.quotas > 0 || usage.imports > 0 || usage.assignments > 0) {
+            customAlert('No se puede eliminar', `"${sub.name}" tiene ${usage.quotas} cuota(s), ${usage.assignments} asignación(es) y ${usage.imports} importación(es) registradas. Elimínelas primero.`);
             return;
         }
     }

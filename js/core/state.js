@@ -24,5 +24,23 @@ window.appState = {
     if (saved) window.PERSISTED_KEYS.forEach(k => { window.appState[k] = saved[k]; });
 })();
 
+// Carga los PCG oficiales (js/data/pcg-honduras.js) en el catálogo, también sobre datos ya guardados.
+// Solo llena factores vacíos: un factor capturado a mano distinto al oficial no se toca.
+(function applyOfficialPcg() {
+    const pcg = window.OFFICIAL_PCG || {};
+    window.appState.substances.forEach(s => {
+        const off = pcg[s.id];
+        if (!off || String(s.module) !== '1') return;
+        const empty = s.gwp === null || s.gwp === undefined || s.gwp === '';
+        if (empty && off.gwp !== null) s.gwp = off.gwp;
+        // Marca "por confirmar" solo si el valor actual es el oficial (o sigue vacío)
+        const isOfficial = (s.gwp === null || s.gwp === undefined || s.gwp === '') ? off.gwp === null : Number(s.gwp) === off.gwp;
+        if (isOfficial && s.gwpConfirmed !== true) {
+            s.gwpPending = off.pending;
+            s.gwpNote = off.note;
+        }
+    });
+})();
+
 
 const tabs = ['quotas', 'mod1', 'mod2', 'mod3', 'portal', 'companies', 'substances', 'years', 'audit'];

@@ -8,7 +8,8 @@ function renderModule3(activeImports) {
     const mod3Imports = filterByMonth(activeImports.filter(i => String(i.module) === '3'), 'mod3');
 
     // Empresas con importaciones de equipos dentro del periodo (año fiscal y mes activos)
-    const mod3Companies = [...new Set(mod3Imports.map(i => i.company))].sort((a, b) => a.localeCompare(b));
+    // Empresas asignadas a este apartado en Asignación de Cuota más las que importaron en el periodo
+    const mod3Companies = companiesInModule('3', mod3Imports);
 
     let html = `
         <div class="mb-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -43,7 +44,7 @@ function renderModule3(activeImports) {
                     <thead>
                         <tr class="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500">
                             <th class="p-3.5 font-semibold">Empresa Importadora</th>
-                            <th class="p-3.5 font-semibold">Categorías de Equipos Importadas</th>
+                            <th class="p-3.5 font-semibold">Categorías de Equipos</th>
                             <th class="p-3.5 font-semibold text-right">Total (Unidades)</th>
                         </tr>
                     </thead>
@@ -51,11 +52,11 @@ function renderModule3(activeImports) {
     `;
 
     if (mod3Companies.length === 0) {
-        html += `<tr><td colspan="3" class="p-6 text-center text-gray-400">Ninguna empresa ha importado en este apartado durante el periodo.</td></tr>`;
+        html += `<tr><td colspan="3" class="p-6 text-center text-gray-400">Ninguna empresa asignada ni con importaciones en este apartado durante el periodo.</td></tr>`;
     } else {
         mod3Companies.forEach(name => {
             const compImports = mod3Imports.filter(i => i.company === name);
-            const cats = [...new Set(compImports.map(i => i.type))];
+            const cats = substancesOfCompanyInModule(name, '3', compImports);
             const totalUnits = compImports.reduce((acc, cur) => acc + parseInt(cur.qty || 0, 10), 0);
 
             html += `

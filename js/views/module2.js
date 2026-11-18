@@ -8,7 +8,8 @@ function renderModule2(activeImports) {
     const mod2Imports = filterByMonth(activeImports.filter(i => String(i.module) === '2'), 'mod2');
 
     // Empresas con importaciones en este apartado dentro del periodo (año fiscal y mes activos)
-    const mod2Companies = [...new Set(mod2Imports.map(i => i.company))].sort((a, b) => a.localeCompare(b));
+    // Empresas asignadas a este apartado en Asignación de Cuota más las que importaron en el periodo
+    const mod2Companies = companiesInModule('2', mod2Imports);
 
     let html = `
         <div class="mb-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -44,7 +45,7 @@ function renderModule2(activeImports) {
                     <thead>
                         <tr class="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500">
                             <th class="p-3.5 font-semibold">Empresa Importadora</th>
-                            <th class="p-3.5 font-semibold">Sustancias que Importa</th>
+                            <th class="p-3.5 font-semibold">Sustancias</th>
                             <th class="p-3.5 font-semibold text-right">Total Importado (TM)</th>
                             <th class="p-3.5 font-semibold text-right">Total Importado (TCO₂eq)</th>
                         </tr>
@@ -53,11 +54,11 @@ function renderModule2(activeImports) {
     `;
 
     if (mod2Companies.length === 0) {
-        html += `<tr><td colspan="4" class="p-6 text-center text-gray-400">Ninguna empresa ha importado en este apartado durante el periodo.</td></tr>`;
+        html += `<tr><td colspan="4" class="p-6 text-center text-gray-400">Ninguna empresa asignada ni con importaciones en este apartado durante el periodo.</td></tr>`;
     } else {
         mod2Companies.forEach(name => {
             const compImports = mod2Imports.filter(i => i.company === name);
-            const subs = [...new Set(compImports.map(i => i.type))];
+            const subs = substancesOfCompanyInModule(name, '2', compImports);
             const totalTon = round2(compImports.reduce((acc, cur) => acc + parseFloat(cur.qty || 0), 0));
 
             html += `
