@@ -19,9 +19,6 @@ function renderModule3(activeImports) {
                 <p class="text-sm text-gray-500">Medición exclusiva en Unidades de aparatos con gases regulados o no regulados.</p>
             </div>
             <div class="flex flex-wrap items-center gap-2">
-                <button onclick="openQuickCompanyModal()" class="px-3 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg text-xs font-bold">
-                    + Agregar Empresa
-                </button>
                 <button onclick="clearModuleData('3')" class="px-3 py-2 bg-white border border-red-200 hover:bg-red-50 text-red-600 rounded-lg text-xs font-bold">
                     Vaciar Movimientos
                 </button>

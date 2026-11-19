@@ -19,9 +19,6 @@ function renderModule2(activeImports) {
                 <p class="text-sm text-gray-500">Contabilización en Toneladas con su fracción arancelaria correspondiente.</p>
             </div>
             <div class="flex flex-wrap items-center gap-2">
-                <button onclick="openQuickCompanyModal()" class="px-3 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg text-xs font-bold">
-                    + Agregar Empresa
-                </button>
                 <button onclick="clearModuleData('2')" class="px-3 py-2 bg-white border border-red-200 hover:bg-red-50 text-red-600 rounded-lg text-xs font-bold">
                     Vaciar Movimientos
                 </button>
