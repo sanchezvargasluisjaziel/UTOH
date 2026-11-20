@@ -1,0 +1,64 @@
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f8fafc;
+}
+.tab-active {
+    background-color: #eef2ff;
+    color: #4338ca;
+    border-right: 4px solid #4338ca;
+    font-weight: 700;
+}
+.tab-inactive {
+    color: #475569;
+}
+.tab-inactive:hover {
+    background-color: #f1f5f9;
+    color: #1e293b;
+}
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #printable-receipt-area, #printable-receipt-area * {
+        visibility: visible;
+    }
+    #printable-receipt-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        box-shadow: none !important;
+    }
+}
+
+/* Reportes impresos (módulos 1, 2, 3 y auditoría) */
+#printable-report {
+    display: none;
+}
+@media print {
+    body.printing-report {
+        display: block !important;
+        height: auto !important;
+        overflow: visible !important;
+        background: #fff !important;
+    }
+    body.printing-report > *:not(#printable-report) {
+        display: none !important;
+    }
+    body.printing-report #printable-report {
+        display: block;
+        padding: 0;
+        color: #0f172a;
+        font-family: 'Inter', sans-serif;
+    }
+    body.printing-report #printable-report,
+    body.printing-report #printable-report * {
+        visibility: visible;
+    }
+    body.printing-report #printable-report thead {
+        display: table-header-group;
+    }
+    body.printing-report #printable-report tr {
+        page-break-inside: avoid;
+    }
+}
